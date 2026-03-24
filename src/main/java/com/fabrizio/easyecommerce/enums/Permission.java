@@ -1,0 +1,37 @@
+package com.fabrizio.easyecommerce.enums;
+
+public enum Permission {
+    READ_ALL_PRODUCTS,
+
+    READ_ONE_PRODUCT,
+
+    SAVE_ONE_PRODUCT,
+
+    UPDATE_ONE_PRODUCT,
+
+    DELETE_ONE_PRODUCT,
+
+    READ_ALL_CATEGORTIES,
+
+    SAVE_ONE_CATEGORY,
+
+    UPDATE_ONE_CATEGORY,
+
+    DELETE_ONE_CATEGORY,
+
+    READ_ONE_CART,
+
+    SAVE_ONE_CART,
+
+    UPDATE_ONE_CART,
+
+    DELETE_ONE_CART,
+
+    SAVE_ONE_ORDER,
+
+    READ_ALL_ORDERS,
+
+    READ_ONE_ORDER,
+
+    UPDATE_ONE_ORDER;
+}
