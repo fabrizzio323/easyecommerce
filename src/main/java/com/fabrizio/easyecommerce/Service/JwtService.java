@@ -1,5 +1,6 @@
 package com.fabrizio.easyecommerce.Service;
 
+import com.fabrizio.easyecommerce.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
@@ -40,8 +41,24 @@ public class JwtService {
     private Key generateKey(){
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
-    private String extractEmail(String jwt){
+    public String extractEmail(String jwt){
         return extractAllClaims(jwt).getSubject();
+    }
+
+    public boolean isTokenValid(String jwt, User user){
+        try{
+            String email = extractEmail(jwt);
+            return (email.equals(user.getEmail()) && !isTokenExpired(jwt));
+        }catch (Exception e){
+          return false;
+        }
+    }
+
+    public boolean isTokenExpired(String jwt){
+        return extractExpiration(jwt).before(new Date());
+    }
+    public Date extractExpiration(String jwt){
+        return extractAllClaims(jwt).getExpiration();
     }
 
     private Claims extractAllClaims(String jwt){

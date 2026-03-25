@@ -2,6 +2,7 @@ package com.fabrizio.easyecommerce.Service;
 
 import com.fabrizio.easyecommerce.dto.AuthenticationRequest;
 import com.fabrizio.easyecommerce.dto.AuthenticationResponse;
+import com.fabrizio.easyecommerce.dto.RegisterRequest;
 import com.fabrizio.easyecommerce.dto.UserDTO;
 import com.fabrizio.easyecommerce.entity.User;
 import com.fabrizio.easyecommerce.enums.Role;
@@ -34,12 +35,14 @@ public class AuthenticationService {
     private PasswordEncoder passwordEncode;
 
 
-    public void register(UserDTO userDTO){
+    public void register(RegisterRequest registerRequest){
 
-        if(emailExistent(userDTO.getEmail()).isEmpty())  {
-            User user = userMapper.toUser(userDTO);
+        if(emailExistent(registerRequest.getEmail()).isEmpty())  {
+            User user = new User();
+            user.setName(registerRequest.getName());
+            user.setEmail(registerRequest.getEmail());
             user.setRole(Role.USER);
-            user.setPassword(passwordEncode.encode(user.getPassword()));
+            user.setPassword(passwordEncode.encode(registerRequest.getPassword()));
             userRepository.save(user);
         }else{
             throw new RuntimeException("Email already exists");
@@ -58,6 +61,21 @@ public class AuthenticationService {
 
         String jwt = jwtService.generateToken(user.getEmail(), generateExtraClaims(user));
         return new AuthenticationResponse(jwt);
+    }
+
+    public UserDTO authMe(String jwt){
+        if(jwt==null || !jwt.startsWith("Bearer ")){
+            throw new RuntimeException("Invalid token");
+        }
+        String email = jwtService.extractEmail(jwt);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setName(user.getName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setRole(user.getRole());
+        return userDTO;
     }
 
     private Map<String, Object> generateExtraClaims(User user){
