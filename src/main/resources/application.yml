@@ -6,6 +6,12 @@ spring:
   name: easyecommerce
   context-path: /easyecommerce
 
+security:
+  jwt:
+    expiration-minutes: 30
+    secret-key: ZWwgc29sIHNlIGNhc2EgY29uIGxhIGx1bmEgeSBzYXR1cm8gZ3VhcmRhIGxvcyBhbmlsbG9z
+
+
   jpa:
     hibernate:
       ddl-auto: update

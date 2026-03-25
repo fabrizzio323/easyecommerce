@@ -11,11 +11,10 @@ import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
-    @Mapping(source="id", target="id")
-    @Mapping(source="name", target="name")
-    @Mapping(source="email", target="email")
-    @Mapping(source="password", target="password")
-    @Mapping(source="createdAt", target="createdAt")
+    @Mapping(target="id", ignore=true)
+    @Mapping(target="name", ignore = true)
+    @Mapping(target="email", ignore = true)
+    @Mapping(target="password", ignore = true)
     UserDTO toUserDTO(User user);
 
     @InheritConfiguration
