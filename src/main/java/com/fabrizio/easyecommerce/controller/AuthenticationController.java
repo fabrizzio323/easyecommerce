@@ -7,7 +7,6 @@ import com.fabrizio.easyecommerce.dto.RegisterRequest;
 import com.fabrizio.easyecommerce.dto.UserDTO;
 import com.fabrizio.easyecommerce.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,24 +25,16 @@ public class AuthenticationController {
 
     @Operation(summary="Register a new user given a user object")
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterRequest request){
-        try {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request){
             authenticationService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
-        } catch (RuntimeException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
     }
 
     @Operation(summary="Login a user given an email and password, returns a JWT token if successful")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid AuthenticationRequest authRequest){
-        try {
             AuthenticationResponse authenticationResponse = authenticationService.login(authRequest);
             return ResponseEntity.status(HttpStatus.OK).body(authenticationResponse);
-        } catch (RuntimeException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
     }
 
     @Operation(summary="Get the authenticated user's information, requires a valid JWT token in the Authorization header")

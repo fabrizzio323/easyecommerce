@@ -79,7 +79,7 @@
 			<version>${mapstruct.version}</version>
 		</dependency>
 
-		<!-- 🔥 Lombok + MapStruct binding (CLAVE) -->
+		<!-- 🔥 Lombok + MapStruct binding -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok-mapstruct-binding</artifactId>
@@ -105,10 +105,21 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- 🧪 Testing -->
+		<!-- ========================================= -->
+		<!-- 🧪 TESTING -->
+		<!-- ========================================= -->
+
+		<!-- 🧪 Spring Boot Test (JUnit, Mockito, MockMvc) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 🔐 Spring Security Test (CSRF, usuarios mock, etc) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -162,7 +173,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- 🚀 Spring Boot plugin -->
+			<!--Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
