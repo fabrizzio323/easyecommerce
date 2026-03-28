@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryRequestDTO {
-   @NotBlank(message = "Id is required")
-   private Long id;
+   @NotBlank(message = "name is required")
+   private String name;
    @NotBlank(message = "description is required")
    private String description;
-   @NotBlank(message = "id product is required")
-   private Long idProduct;
+
 }
