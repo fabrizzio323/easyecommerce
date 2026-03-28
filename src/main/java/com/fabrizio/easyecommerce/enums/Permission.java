@@ -11,7 +11,7 @@ public enum Permission {
 
     DELETE_ONE_PRODUCT,
 
-    READ_ALL_CATEGORTIES,
+    READ_ALL_CATEGORIES,
 
     SAVE_ONE_CATEGORY,
 

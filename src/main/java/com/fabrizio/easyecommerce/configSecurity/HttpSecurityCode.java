@@ -1,6 +1,7 @@
 package com.fabrizio.easyecommerce.configSecurity;
 
 
+import com.fabrizio.easyecommerce.enums.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,9 +41,14 @@ public class HttpSecurityCode {
     public Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> buildRequestMatchers(){
         return authConfig -> {
             authConfig.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
-            authConfig.requestMatchers(HttpMethod.POST,"/auth/login").permitAll();
-            authConfig.requestMatchers(HttpMethod.POST, "/auth/register").permitAll();
-            authConfig.requestMatchers(HttpMethod.GET, "/auth/auth-me").authenticated();
+            authConfig.requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll();
+            authConfig.requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll();
+            authConfig.requestMatchers(HttpMethod.GET, "/api/auth/auth-me").authenticated();
+
+            authConfig.requestMatchers(HttpMethod.GET, "/api/categories").hasAuthority(Permission.READ_ALL_CATEGORIES.name());
+            authConfig.requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority(Permission.SAVE_ONE_CATEGORY.name());
+            authConfig.requestMatchers(HttpMethod.PUT, "/api/categories/{name}").hasAuthority(Permission.UPDATE_ONE_CATEGORY.name());
+            authConfig.requestMatchers(HttpMethod.DELETE, "/api/categories/{id}").hasAuthority(Permission.DELETE_ONE_CATEGORY.name());
 
             authConfig.anyRequest().denyAll();
 
