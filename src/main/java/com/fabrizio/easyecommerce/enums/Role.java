@@ -9,7 +9,7 @@ public enum Role {
     USER(Arrays.asList(
             Permission.READ_ALL_PRODUCTS,
             Permission.READ_ONE_PRODUCT,
-            Permission.READ_ALL_CATEGORTIES,
+            Permission.READ_ALL_CATEGORIES,
             Permission.READ_ONE_CART,
             Permission.SAVE_ONE_CART,
             Permission.UPDATE_ONE_CART,
@@ -24,7 +24,7 @@ public enum Role {
             Permission.SAVE_ONE_PRODUCT,
             Permission.UPDATE_ONE_PRODUCT,
             Permission.DELETE_ONE_PRODUCT,
-            Permission.READ_ALL_CATEGORTIES,
+            Permission.READ_ALL_CATEGORIES,
             Permission.SAVE_ONE_CATEGORY,
             Permission.DELETE_ONE_CATEGORY,
             Permission.UPDATE_ONE_CATEGORY,

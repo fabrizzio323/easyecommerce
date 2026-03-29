@@ -42,7 +42,7 @@ public class AuthenticationControllerTest {
         register.setEmail(email);
         register.setPassword("123456");
 
-        mockMvc.perform(post("/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(register)))
                 .andExpect(status().isCreated());
@@ -59,7 +59,7 @@ public class AuthenticationControllerTest {
         register.setEmail(email);
         register.setPassword("123456");
 
-        mockMvc.perform(post("/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(register)))
                 .andExpect(status().isCreated());
@@ -69,7 +69,7 @@ public class AuthenticationControllerTest {
         login.setEmail(email);
         login.setPassword("123456");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
@@ -87,7 +87,7 @@ public class AuthenticationControllerTest {
         register.setEmail(email);
         register.setPassword("123456");
 
-        mockMvc.perform(post("/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(register)))
                 .andExpect(status().isCreated());
@@ -97,7 +97,7 @@ public class AuthenticationControllerTest {
         login.setEmail(email);
         login.setPassword("123456");
 
-        String response = mockMvc.perform(post("/auth/login")
+        String response = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
@@ -109,7 +109,7 @@ public class AuthenticationControllerTest {
         String token = jsonNode.get("jwt").asText();
 
         // 3. AUTH-ME
-        mockMvc.perform(get("/auth/auth-me")
+        mockMvc.perform(get("/api/auth/auth-me")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }

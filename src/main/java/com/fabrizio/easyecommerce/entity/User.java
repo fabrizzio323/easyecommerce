@@ -2,7 +2,7 @@ package com.fabrizio.easyecommerce.entity;
 
 import com.fabrizio.easyecommerce.enums.Role;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,14 +25,13 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Null
     private Long id;
-    @NotBlank
+    @NotNull
     private String name;
     @Column(unique = true)
-    @NotBlank
+    @NotNull
     private String email;
-    @NotBlank
+    @NotNull
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
