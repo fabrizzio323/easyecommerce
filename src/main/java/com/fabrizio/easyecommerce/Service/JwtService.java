@@ -6,6 +6,8 @@ import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.security.Key;
@@ -16,6 +18,8 @@ import java.util.Map;
 @Service
 public class JwtService {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+
     @Value("${security.jwt.expiration-minutes}")
     private Long EXPIRATION_MINUTES;
 
@@ -24,9 +28,10 @@ public class JwtService {
 
 
     public String generateToken(String email, Map<String, Object> extraClaims){
+        logger.debug("Generating JWT token for user: {}", email);
         Date issuedAt = new Date(System.currentTimeMillis());
         Date expiration = new Date(issuedAt.getTime() + (EXPIRATION_MINUTES * 60 * 1000));
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(email)
                 .setIssuedAt(issuedAt)
@@ -34,6 +39,8 @@ public class JwtService {
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .signWith(generateKey(), SignatureAlgorithm.HS256)
                 .compact();
+        logger.info("JWT token generated successfully for user: {}", email);
+        return token;
     }
 
 
@@ -42,15 +49,20 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
     public String extractEmail(String jwt){
-        return extractAllClaims(jwt).getSubject();
+        String email = extractAllClaims(jwt).getSubject();
+        logger.debug("Extracted email from JWT: {}", email);
+        return email;
     }
 
     public boolean isTokenValid(String jwt, User user){
         try{
             String email = extractEmail(jwt);
-            return (email.equals(user.getEmail()) && !isTokenExpired(jwt));
+            boolean isValid = (email.equals(user.getEmail()) && !isTokenExpired(jwt));
+            logger.debug("Token validation for user {}: {}", user.getEmail(), isValid ? "VALID" : "INVALID");
+            return isValid;
         }catch (Exception e){
-          return false;
+            logger.warn("Token validation failed for user {}: {}", user.getEmail(), e.getMessage());
+            return false;
         }
     }
 

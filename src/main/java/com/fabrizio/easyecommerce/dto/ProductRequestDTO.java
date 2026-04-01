@@ -17,7 +17,7 @@ public class ProductRequestDTO {
     private String name;
     @NotBlank(message = "description is required")
     private String description;
-    @NotBlank(message="price is required")
+    @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
     private BigDecimal price;
     @Min(value = 0, message = "Stock must be non-negative")

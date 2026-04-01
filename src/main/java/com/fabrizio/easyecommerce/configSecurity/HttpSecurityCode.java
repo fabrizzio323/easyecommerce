@@ -50,6 +50,12 @@ public class HttpSecurityCode {
             authConfig.requestMatchers(HttpMethod.PUT, "/api/categories/{name}").hasAuthority(Permission.UPDATE_ONE_CATEGORY.name());
             authConfig.requestMatchers(HttpMethod.DELETE, "/api/categories/{id}").hasAuthority(Permission.DELETE_ONE_CATEGORY.name());
 
+            authConfig.requestMatchers(HttpMethod.GET, "/api/products").hasAuthority(Permission.READ_ALL_PRODUCTS.name());
+            authConfig.requestMatchers(HttpMethod.GET, "/api/products/{id}").hasAuthority(Permission.READ_ONE_PRODUCT.name());
+            authConfig.requestMatchers(HttpMethod.POST, "/api/products").hasAuthority(Permission.SAVE_ONE_PRODUCT.name());
+            authConfig.requestMatchers(HttpMethod.PUT, "/api/products/{id}").hasAuthority(Permission.UPDATE_ONE_PRODUCT.name());
+            authConfig.requestMatchers(HttpMethod.DELETE, "/api/products/{id}").hasAuthority(Permission.DELETE_ONE_PRODUCT.name());
+
             authConfig.anyRequest().denyAll();
 
         };
