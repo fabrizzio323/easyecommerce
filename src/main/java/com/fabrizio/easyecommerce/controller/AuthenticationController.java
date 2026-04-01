@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +53,8 @@ import org.springframework.web.bind.annotation.*;
 )
 public class AuthenticationController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -80,8 +84,15 @@ public class AuthenticationController {
     })
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request){
-        authenticationService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        logger.info("Attempting to register new user with email: {}", request.getEmail());
+        try {
+            authenticationService.register(request);
+            logger.info("User registered successfully: {}", request.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        } catch (Exception e) {
+            logger.error("Failed to register user: {}", request.getEmail(), e);
+            throw e;
+        }
     }
 
     @Operation(
@@ -117,8 +128,15 @@ public class AuthenticationController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid AuthenticationRequest authRequest){
-        AuthenticationResponse authenticationResponse = authenticationService.login(authRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(authenticationResponse);
+        logger.info("Login attempt for user: {}", authRequest.getEmail());
+        try {
+            AuthenticationResponse authenticationResponse = authenticationService.login(authRequest);
+            logger.info("Login successful for user: {}", authRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.OK).body(authenticationResponse);
+        } catch (Exception e) {
+            logger.warn("Login failed for user: {}", authRequest.getEmail(), e);
+            throw e;
+        }
     }
 
     @Operation(
@@ -147,9 +165,11 @@ public class AuthenticationController {
     })
     @GetMapping("/auth-me")
     public ResponseEntity<UserDTO> authMe() {
+        logger.debug("Auth-me request received");
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            logger.info("Auth-me successful for user: {}", user.getEmail());
             UserDTO userDTO = new UserDTO();
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
@@ -159,6 +179,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.OK).body(userDTO);
         }
 
+        logger.warn("Auth-me failed: no authenticated user found");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
