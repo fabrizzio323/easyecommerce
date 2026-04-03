@@ -5,9 +5,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.security.Key;
@@ -23,8 +23,8 @@ public class JwtService {
     @Value("${security.jwt.expiration-minutes}")
     private Long EXPIRATION_MINUTES;
 
-    @Value("${security.jwt.secret-key}")
-    private String SECRET_KEY;
+    @Autowired
+    private Key jwtSigningKey;
 
 
     public String generateToken(String email, Map<String, Object> extraClaims){
@@ -37,7 +37,7 @@ public class JwtService {
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration)
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .signWith(generateKey(), SignatureAlgorithm.HS256)
+                .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
                 .compact();
         logger.info("JWT token generated successfully for user: {}", email);
         return token;
@@ -45,9 +45,7 @@ public class JwtService {
 
 
 
-    private Key generateKey(){
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-    }
+
     public String extractEmail(String jwt){
         String email = extractAllClaims(jwt).getSubject();
         logger.debug("Extracted email from JWT: {}", email);
@@ -74,7 +72,7 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String jwt){
-        return Jwts.parserBuilder().setSigningKey(generateKey()).build()
+        return Jwts.parserBuilder().setSigningKey(jwtSigningKey).build()
                 .parseClaimsJws(jwt).getBody();
     }
 }

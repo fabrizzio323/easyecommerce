@@ -32,3 +32,11 @@ INSERT INTO products (name, description, price, stock, active, category_id, crea
 
 -- Salud y Belleza (ID 5)
 INSERT INTO products (name, description, price, stock, active, category_id, created_at) VALUES ('Protector Solar FPS 50', 'Crema protectora de amplio espectro 200ml', 9500.00, 60, true, 5, CURRENT_TIMESTAMP);
+
+INSERT INTO carts (user_id, created_at) VALUES (1, NOW());
+INSERT INTO carts (user_id, created_at) VALUES (2, NOW());
+
+
+INSERT INTO cart_items (cart_id, product_id, quantity, price_at_purchase) VALUES (2, 1, 1, 450000.00);
+
+INSERT INTO cart_items (cart_id, product_id, quantity, price_at_purchase) VALUES (2, 3, 2, 95000.00);

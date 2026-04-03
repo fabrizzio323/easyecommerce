@@ -2,32 +2,38 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/easyecommerce
     username: postgres
-    password: '44815602' # Es mejor ponerlo entre comillas por si hay caracteres especiales
+    password: '44815602'
 
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    # --- ESTA LÍNEA ES LA QUE FALTA ---
+        format_sql: true
     defer-datasource-initialization: true
 
   sql:
     init:
       mode: always
 
-  # Si usas Spring Boot 3, esto ayuda a ver errores detallados de la inicialización
   output:
     ansi:
       enabled: always
 
+  application:
+    name: easyecommerce
+
 server:
   port: 8081
+  error:
+    include-message: always
+    include-binding-errors: always
 
-# Tu configuración de seguridad se mantiene igual
+# Configuración de seguridad JWT
+# La secret-key se genera de forma aleatoria y segura en cada inicio de la aplicación
 security:
   jwt:
     expiration-minutes: 30
-    secret-key: ZWwgc29sIHNlIGNhc2EgY29uIGxhIGx1bmEgeSBzYXR1cm8gZ3VhcmRhIGxvcyBhbmlsbG9z
+    # secret-key se genera automáticamente de forma segura al iniciar la aplicación (ver JwtConfig.java)

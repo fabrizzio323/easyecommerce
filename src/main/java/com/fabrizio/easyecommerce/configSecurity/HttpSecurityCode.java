@@ -56,6 +56,13 @@ public class HttpSecurityCode {
             authConfig.requestMatchers(HttpMethod.PUT, "/api/products/{id}").hasAuthority(Permission.UPDATE_ONE_PRODUCT.name());
             authConfig.requestMatchers(HttpMethod.DELETE, "/api/products/{id}").hasAuthority(Permission.DELETE_ONE_PRODUCT.name());
 
+            authConfig.requestMatchers(HttpMethod.GET, "/api/cart").hasAuthority(Permission.READ_ONE_CART.name());
+            authConfig.requestMatchers(HttpMethod.POST, "/api/cart/create/{userId}").hasAuthority(Permission.SAVE_ONE_CART.name());
+            authConfig.requestMatchers(HttpMethod.POST, "/api/cart/add/{userId}").hasAuthority(Permission.ADD_ITEM_CART.name());
+            authConfig.requestMatchers(HttpMethod.PUT, "/api/cart/item/{cartItemId}").hasAuthority(Permission.UPDATE_QUANTITY_ITEM_CART.name());
+            authConfig.requestMatchers(HttpMethod.DELETE, "/api/cart/item/{cartItemId}").hasAuthority(Permission.DELETE_ITEM_CART.name());
+            authConfig.requestMatchers(HttpMethod.DELETE, "/api/cart/clear/{userId}").hasAuthority(Permission.CLEAR_CART.name());
+
             authConfig.anyRequest().denyAll();
 
         };
