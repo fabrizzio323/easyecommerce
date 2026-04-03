@@ -49,6 +49,9 @@ public class AuthenticationService {
             user.setEmail(registerRequest.getEmail());
             user.setRole(Role.USER);
             user.setPassword(passwordEncode.encode(registerRequest.getPassword()));
+            user.setStreet(registerRequest.getStreet());
+            user.setCity(registerRequest.getCity());
+            user.setZipCode(registerRequest.getZipCode());
             userRepository.save(user);
             logger.info("User registered successfully: {}", registerRequest.getEmail());
         }else{

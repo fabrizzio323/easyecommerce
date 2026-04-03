@@ -33,6 +33,12 @@ public class User implements UserDetails {
     private String email;
     @NotNull
     private String password;
+    @NotNull
+    private String street;
+    @NotNull
+    private String city;
+    @NotNull
+    private String zipCode;
     @Enumerated(EnumType.STRING)
     private Role role;
     private LocalDateTime createdAt;

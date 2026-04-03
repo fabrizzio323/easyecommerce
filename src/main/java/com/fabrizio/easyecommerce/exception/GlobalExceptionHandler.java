@@ -1,9 +1,12 @@
 package com.fabrizio.easyecommerce.exception;
 
 import com.fabrizio.easyecommerce.exception.Cart.CartAlreadyExistsException;
+import com.fabrizio.easyecommerce.exception.Cart.CartEmptyException;
 import com.fabrizio.easyecommerce.exception.Cart.CartNotFoundException;
 import com.fabrizio.easyecommerce.exception.Category.CategoriesNotFoundException;
 import com.fabrizio.easyecommerce.exception.Category.CategoryNotFoundException;
+import com.fabrizio.easyecommerce.exception.Order.OrderNotFoundException;
+import com.fabrizio.easyecommerce.exception.Products.InsufficientStockException;
 import com.fabrizio.easyecommerce.exception.quantity.QuantityException;
 import com.fabrizio.easyecommerce.exception.Products.ProductNotFoundException;
 import com.fabrizio.easyecommerce.exception.Products.ProductsNotFoundException;
@@ -83,6 +86,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(QuantityException.class)
     public ResponseEntity<String> handleItemNotFoundException(QuantityException ex){
         logger.warn("Item not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CartEmptyException.class)
+    public ResponseEntity<String> handleCartEmptyException(CartEmptyException ex){
+        logger.warn("Cart is empty: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<String> handleInsufficientStockException(InsufficientStockException ex){
+        logger.warn("Insufficient stock: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<String> handleOrderNotFoundException(OrderNotFoundException ex){
+        logger.warn("Order not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

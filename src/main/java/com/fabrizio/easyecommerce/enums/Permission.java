@@ -31,11 +31,11 @@ public enum Permission {
 
     CLEAR_CART,
 
-    SAVE_ONE_ORDER,
+    PERFORM_CHECKOUT,
 
     READ_ALL_ORDERS,
 
-    READ_ONE_ORDER,
+    UPDATE_ORDER_STATUS,
 
-    UPDATE_ONE_ORDER;
+    READ_MY_ORDERS;
 }
