@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(
@@ -28,27 +29,14 @@ import org.springframework.web.bind.annotation.*;
         description = """
     Endpoints responsible for user registration, authentication, and session validation.
 
-    🔐 Authentication Flow:
-    1. Login using /login
-    2. Copy the JWT token from the response
-    3. Use it in Swagger or Postman:
-       Authorization: Bearer <your_token>
-    4. Access protected endpoints
+    🔐 **Authentication Flow**:
+    1. Register with shipping details using `/register`
+    2. Login using `/login`
+    3. Use the JWT token in headers: `Authorization: Bearer <token>`
 
-    👤 Preloaded Users (from import.sql):
-
-    ADMINISTRATOR:
-    email: admin@test.com
-    password: admin123
-
-    USER:
-    email: user@test.com
-    password: user123
-
-    ⚠️ Notes:
-    - Administrator has full permissions
-    - User has limited permissions depending on roles
-    - All secured endpoints require a valid JWT token
+    👤 **Preloaded Users (from import.sql)**:
+    - **ADMIN**: admin@test.com / admin123 (Location: Av. Fascio 123, San Salvador de Jujuy)
+    - **USER**: user@test.com / user123 (Location: Belgrano 450, San Salvador de Jujuy)
     """
 )
 public class AuthenticationController {
@@ -59,28 +47,34 @@ public class AuthenticationController {
     private AuthenticationService authenticationService;
 
     @Operation(
-            summary = "Register a new user",
+            summary = "Register a new user with shipping address",
             description = """
-        Creates a new user in the system.
+        Creates a new user in the system including mandatory shipping information.
+        
+        📌 **Public Endpoint**
+        
+        ✔ **Required fields**:
+        - **name**: Full name
+        - **email**: Valid and unique email
+        - **password**: Minimum 6 characters
+        - **street**: Street name and number
+        - **city**: City (e.g., San Salvador de Jujuy)
+        - **zipCode**: Postal code (e.g., 4600)
 
-        📌 This endpoint does NOT require authentication.
-
-        ✔ Required fields:
-        - name
-        - email
-        - password
-
-        ✔ Example:
+        ✔ **Example**:
         {
-          "name": "John Doe",
-          "email": "john@test.com",
-          "password": "123456"
+          "name": "Fabrizio Armada",
+          "email": "fabri@test.com",
+          "password": "password123",
+          "street": "Alvear 1020",
+          "city": "San Salvador de Jujuy",
+          "zipCode": "4600"
         }
         """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Validation error")
+            @ApiResponse(responseCode = "400", description = "Validation error - Missing fields or invalid format")
     })
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request){
@@ -99,26 +93,11 @@ public class AuthenticationController {
             summary = "Login and obtain JWT token",
             description = """
         Authenticates a user and returns a JWT token.
-
-        📌 Use one of the predefined users:
-
-        ADMIN:
-        email: admin@test.com
-        password: admin123
-
-        USER:
-        email: user@test.com
-        password: user123
-
-        ✔ Example request:
+        
+        ✔ **Example request**:
         {
           "email": "admin@test.com",
           "password": "admin123"
-        }
-
-        ✔ Response:
-        {
-          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         }
         """
     )
@@ -140,21 +119,21 @@ public class AuthenticationController {
     }
 
     @Operation(
-            summary = "Get authenticated user info",
+            summary = "Get authenticated user info including address",
             description = """
-        Returns the information of the currently authenticated user.
+        Returns the profile information of the currently authenticated user.
 
-        🔐 Requires JWT token.
-
-        ✔ Header:
-        Authorization: Bearer <token>
-
-        ✔ Response example:
+        🔐 **Requires JWT token**
+        
+        ✔ **Response example**:
         {
           "id": 1,
-          "name": "testAdministrator",
+          "name": "Fabrizio Armada",
           "email": "admin@test.com",
-          "role": "ADMINISTRATOR"
+          "role": "ADMINISTRATOR",
+          "street": "Av. Fascio 123",
+          "city": "San Salvador de Jujuy",
+          "zipCode": "4600"
         }
         """,
             security = @SecurityRequirement(name = "bearerAuth")
@@ -175,6 +154,9 @@ public class AuthenticationController {
             userDTO.setName(user.getName());
             userDTO.setEmail(user.getEmail());
             userDTO.setRole(user.getRole());
+            userDTO.setStreet(user.getStreet());
+            userDTO.setCity(user.getCity());
+            userDTO.setZipCode(user.getZipCode());
 
             return ResponseEntity.status(HttpStatus.OK).body(userDTO);
         }

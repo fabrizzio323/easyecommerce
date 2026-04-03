@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = CartItemMapper.class)
@@ -27,7 +28,7 @@ public interface CartMapper {
 
     List<Cart> toCartList(List<CartRequestDTO> cartRequestDTOList);
 
-    default java.math.BigDecimal calculateTotal(com.fabrizio.easyecommerce.entity.Cart cart) {
+    default BigDecimal calculateTotal(Cart cart) {
         if (cart.getItems() == null) return java.math.BigDecimal.ZERO;
 
         return cart.getItems().stream()

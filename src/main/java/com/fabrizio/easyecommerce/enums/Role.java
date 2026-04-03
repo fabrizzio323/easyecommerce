@@ -16,9 +16,8 @@ public enum Role {
             Permission.DELETE_ITEM_CART,
             Permission.UPDATE_QUANTITY_ITEM_CART,
             Permission.CLEAR_CART,
-            Permission.SAVE_ONE_ORDER,
-            Permission.READ_ALL_ORDERS,
-            Permission.READ_ONE_ORDER)),
+            Permission.PERFORM_CHECKOUT,
+            Permission.READ_MY_ORDERS)),
 
     ADMINISTRATOR(Arrays.asList(
             Permission.READ_ALL_PRODUCTS,
@@ -36,10 +35,10 @@ public enum Role {
             Permission.UPDATE_QUANTITY_ITEM_CART,
             Permission.DELETE_ITEM_CART,
             Permission.CLEAR_CART,
-            Permission.SAVE_ONE_ORDER,
+            Permission.PERFORM_CHECKOUT,
             Permission.READ_ALL_ORDERS,
-            Permission.READ_ONE_ORDER,
-            Permission.UPDATE_ONE_ORDER
+            Permission.READ_MY_ORDERS,
+            Permission.UPDATE_ORDER_STATUS
     ));
 
 
