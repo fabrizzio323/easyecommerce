@@ -23,9 +23,13 @@ public enum Permission {
 
     SAVE_ONE_CART,
 
-    UPDATE_ONE_CART,
+    ADD_ITEM_CART,
 
-    DELETE_ONE_CART,
+    UPDATE_QUANTITY_ITEM_CART,
+
+    DELETE_ITEM_CART,
+
+    CLEAR_CART,
 
     SAVE_ONE_ORDER,
 
