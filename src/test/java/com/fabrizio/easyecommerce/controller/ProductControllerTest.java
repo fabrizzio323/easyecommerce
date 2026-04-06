@@ -128,7 +128,7 @@ class ProductControllerTest {
 
         String request = """
                 {
-                  "name": "Auriculares Sony Updated",
+                  "name": "Sony Headphones Updated",
                   "description": "Updated description",
                   "price": 100000.00,
                   "stock": 30,
