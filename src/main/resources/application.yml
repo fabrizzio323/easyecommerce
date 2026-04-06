@@ -37,4 +37,4 @@ server:
 security:
   jwt:
     expiration-minutes: 30
-    # the seecret key is expirable after 30 minutes
+    # the seecret key is expirable after 30 minutes.
