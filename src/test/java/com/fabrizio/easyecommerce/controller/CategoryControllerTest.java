@@ -89,12 +89,12 @@ class CategoryControllerTest {
 
         String request = """
                 {
-                  "name": "Electrónica",
+                  "name": "Electronics",
                   "description": "Actualizada"
                 }
                 """;
 
-        mockMvc.perform(put("/api/categories/Electrónica")
+        mockMvc.perform(put("/api/categories/Electronics")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
