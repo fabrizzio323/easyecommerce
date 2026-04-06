@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/easyecommerce
-    username: postgres
-    password: '44815602'
+    url: ${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
@@ -26,14 +26,14 @@ spring:
     name: easyecommerce
 
 server:
-  port: 8081
+  port: ${PORT:8081}
   error:
     include-message: always
     include-binding-errors: always
 
-# Configuración de seguridad JWT
-# La secret-key se genera de forma aleatoria y segura en cada inicio de la aplicación
+# JWT security configuration
+# the secret key is generated automatically in a secure way when the application starts (see JwtConfig.java)
 security:
   jwt:
     expiration-minutes: 30
-    # secret-key se genera automáticamente de forma segura al iniciar la aplicación (ver JwtConfig.java)
+    # the seecret key is expirable after 30 minutes
