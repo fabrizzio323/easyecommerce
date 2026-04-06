@@ -17,7 +17,6 @@ public class JwtConfig {
 
     @Bean
     public Key jwtSigningKey() {
-        // Genera una clave secreta aleatoria segura cada vez que se inicia la aplicación
         Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
         logger.info("JWT signing key generated successfully");

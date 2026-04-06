@@ -41,6 +41,9 @@ public class AuthenticationControllerTest {
         register.setName("Fabri");
         register.setEmail(email);
         register.setPassword("123456");
+        register.setStreet("Test 123");
+        register.setCity("Jujuy");
+        register.setZipCode("4600");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,6 +61,9 @@ public class AuthenticationControllerTest {
         register.setName("Fabri");
         register.setEmail(email);
         register.setPassword("123456");
+        register.setStreet("Test 123");
+        register.setCity("Jujuy");
+        register.setZipCode("4600");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,6 +92,9 @@ public class AuthenticationControllerTest {
         register.setName("Fabri");
         register.setEmail(email);
         register.setPassword("123456");
+        register.setStreet("Test 123");
+        register.setCity("Jujuy");
+        register.setZipCode("4600");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
