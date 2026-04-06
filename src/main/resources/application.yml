@@ -16,7 +16,7 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: ${SQL_INIT_MODE:always}
       data-locations: classpath:import.sql
 
   output:
