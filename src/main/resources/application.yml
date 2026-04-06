@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: ${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE:always}
+      data-locations: classpath:import.sql
+
+  output:
+    ansi:
+      enabled: always
+
+  application:
+    name: easyecommerce
+
+server:
+  port: ${PORT:8081}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# JWT security configuration
+# the secret key is generated automatically in a secure way when the application starts (see JwtConfig.java)
+security:
+  jwt:
+    expiration-minutes: 30
+    # the seecret key is expirable after 30 minutes

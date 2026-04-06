@@ -52,7 +52,7 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- ✅ Validation (DTO validation) -->
+		<!-- ✅ Validation -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
@@ -65,21 +65,35 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- 🧠 Lombok (reduce boilerplate code) -->
+		<!-- 🧪 H2 in-memory DB for tests -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 🧠 Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
 
-		<!-- 🔁 MapStruct (DTO <-> Entity mapping) -->
+		<!-- 🔁 MapStruct -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 		</dependency>
 
-		<!-- 🔐 JWT (authentication) -->
+		<!-- 🔥 Lombok + MapStruct binding -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok-mapstruct-binding</artifactId>
+			<version>0.2.0</version>
+		</dependency>
+
+		<!-- 🔐 JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -98,11 +112,29 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- 🧪 Testing -->
+		<!-- ========================================= -->
+		<!-- 🧪 TESTING -->
+		<!-- ========================================= -->
+
+		<!-- 🧪 Spring Boot Test (JUnit, Mockito, MockMvc) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- 🔐 Spring Security Test (CSRF, usuarios mock, etc) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- 📄 Swagger -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.5.0</version>
 		</dependency>
 
 	</dependencies>
@@ -113,7 +145,7 @@
 	<build>
 		<plugins>
 
-			<!-- 🔧 Compiler plugin (MapStruct + Lombok support) -->
+			<!-- 🔧 Compiler plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -127,20 +159,28 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>1.18.32</version>
 						</path>
 
-						<!-- MapStruct processor -->
+						<!-- MapStruct -->
 						<path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${mapstruct.version}</version>
 						</path>
 
+						<!-- Lombok + MapStruct -->
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 
-			<!-- 🚀 Spring Boot plugin -->
+			<!--Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
