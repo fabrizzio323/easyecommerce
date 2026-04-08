@@ -164,38 +164,37 @@ Order (1) ↔ (N) OrderItem: When checking out, cart items are converted to orde
 
 Price Snapshot: OrderItem stores the priceAtPurchase to ensure historical accuracy if the Product price changes later.
 
-## 🚀 Getting Started
-Option 1 — Docker (Recommended) 🐳
-The fastest way to get the full stack running with PostgreSQL.
-
-## Clone the repo
-```bash
-git clone [https://github.com/fabrizio-armada/easycommerce.git](https://github.com/fabrizio-armada/easycommerce.git)
-cd easycommerce
-```
-## Start everything
-```bash
-docker-compose up --build
-```
-
-Option 2 — Local (Manual) 🛠️
+## 🚀 Getting Started (Manual) 🛠️
 
 Requirements: Java 21+ and PostgreSQL running locally.
 
-Create the database SQL
+### Clone the repo
+```bash
+git clone https://github.com/fabrizzio323/easyecommerce.git
+cd easyecommerce
+```
+
+### Create the database
 ```bash
 psql -U postgres -c "CREATE DATABASE easyecommerce;"
-Configure application.properties or .env
 ```
-Properties
+
+### Configure environment variables
+This project reads the database configuration from environment variables (see `src/main/resources/application.yml`):
+
 ```bash
-DB_URL=jdbc:postgresql://localhost:5432/easyecommerce
+DB_NAME=jdbc:postgresql://localhost:5432/easyecommerce
 DB_USER=postgres
 DB_PASSWORD=yourpassword
 ```
-Run the application
 
-Bash
+(Optional) You can also override the server port (default is `8081`):
+
+```bash
+PORT=8081
+```
+
+### Run the application
 ```bash
 ./mvnw spring-boot:run
 ```
