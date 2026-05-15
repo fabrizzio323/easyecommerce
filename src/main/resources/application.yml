@@ -28,13 +28,11 @@ spring:
 
 server:
   port: ${PORT:8081}
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
 
-# JWT security configuration
-# the secret key is generated automatically in a secure way when the application starts (see JwtConfig.java)
 security:
   jwt:
     expiration-minutes: 30
-    # the seecret key is expirable after 30 minutes
