@@ -36,7 +36,7 @@ Built as a portfolio project to demonstrate production-grade backend development
 ## 🌐 Live Demo
 You can explore the API instantly without running anything locally.
 
-* **Swagger UI (Render):** [https://easyecommerce.onrender.com/swagger-ui.html](https://easyecommerce.onrender.com/swagger-ui.html)
+* **Swagger UI (Railway):** [https://easyecommerce-vwi-production.up.railway.app/swagger-ui/index.html](https://easyecommerce-vwi-production.up.railway.app/swagger-ui/index.html)
 📖
 *(Note: Since this is hosted on a free tier, the first request might take a few seconds to wake up the server).*
 
