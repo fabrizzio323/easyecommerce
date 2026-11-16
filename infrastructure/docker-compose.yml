@@ -27,17 +27,12 @@ services:
       dockerfile: Dockerfile
     container_name: easycommerce-app
     restart: unless-stopped
-
-    ports:
-      - "127.0.0.1:8081:8081"
-
     environment:
       DB_NAME: jdbc:postgresql://db:5432/${POSTGRES_DB:-easyecommerce}
       DB_USER: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
       PORT: 8081
       SQL_INIT_MODE: ${SQL_INIT_MODE:-always}
-
     depends_on:
       db:
         condition: service_healthy
@@ -45,14 +40,12 @@ services:
     networks:
       - easycommerce-network
 
-  # ---------- FRONTEND REACT + NGINX ----------
   frontend:
     build:
       context: ../../ecommerce-front
       dockerfile: Dockerfile
     container_name: easycommerce-frontend
     restart: unless-stopped
-
     depends_on:
       - app
 
@@ -184,6 +177,63 @@ services:
     networks: 
       - easycommerce-network
     
+  db-backup:
+    build: ./backup
+    container_name: easycommerce-db-backup
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
+      PGDATABASE: ${POSTGRES_DB:-easyecommerce}
+      BACKUP_TOKEN: ${BACKUP_TOKEN:?Defini BACKUP_TOKEN en .env}
+    volumes:
+      - backups_data:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - easycommerce-network
+ # ---------- Gestion de incidencias: MantisBT ----------
+  # Base propia (MariaDB), separada de la PostgreSQL de la aplicacion.
+  mantis-db:
+    image: mariadb:11.4
+    container_name: easycommerce-mantis-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MANTIS_DB_NAME:-bugtracker}
+      MARIADB_USER: ${MANTIS_DB_USER:-mantisbt}
+      MARIADB_PASSWORD: ${MANTIS_DB_PASSWORD:?Defini MANTIS_DB_PASSWORD en .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - mantis_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - easycommerce-network
+  mantisbt:
+    image: xlrl/mantisbt:${MANTIS_VERSION:?Defini MANTIS_VERSION en .env (tag fijo, no latest)}
+    container_name: easycommerce-mantisbt
+    restart: unless-stopped
+    environment:
+      MANTIS_TIMEZONE: ${TZ:-America/Argentina/Jujuy}
+      MANTIS_ENABLE_ADMIN: ${MANTIS_ENABLE_ADMIN:-0}
+      PHP_MAX_UPLOAD_SIZE: ${MANTIS_MAX_UPLOAD:-5M}
+    ports:
+      - "127.0.0.1:${MANTIS_PORT:-8083}:80"
+    volumes:
+      - mantis_config:/var/www/html/config
+      - mantis_custom:/var/www/html/custom
+    depends_on:
+      mantis-db:
+        condition: service_healthy
+    networks:
+      - easycommerce-network
+
 
 networks:
   easycommerce-network:
@@ -196,3 +246,7 @@ volumes:
   prometheus_data:
   grafana_data:
   n8n_data:
+  backups_data:
+  mantis_db_data:
+  mantis_config:
+  mantis_custom:
