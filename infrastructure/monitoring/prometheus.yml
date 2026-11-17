@@ -3,13 +3,29 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
+
+  # Prometheus
   - job_name: prometheus
     static_configs:
       - targets: ["localhost:9090"]
+
+  # Backend Spring Boot
   - job_name: backend
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ["app:8081"]
+
+  # PostgreSQL
   - job_name: postgres
     static_configs:
       - targets: ["postgres-exporter:9187"]
+
+  # Sistema operativo Linux de Docker
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Contenedores Docker
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]

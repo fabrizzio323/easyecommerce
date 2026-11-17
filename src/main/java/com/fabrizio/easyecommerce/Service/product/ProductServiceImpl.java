@@ -17,6 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import java.util.List;
 
@@ -41,6 +46,29 @@ public class ProductServiceImpl implements ProductService {
         }
         
         return productPage.map(productMapper::toProductResponseDTO);
+    }
+
+    @Override
+    public Page<ProductResponseDTO> getFilteredProducts(
+            Long categoryId, String search, Pageable pageable) {
+        final String term = (search == null || search.isBlank())
+                ? null : search.trim().toLowerCase(Locale.ROOT);
+
+        Specification<Product> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("active")));
+
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+            if (term != null) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + term + "%"));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return productRepository.findAll(specification, pageable)
+                .map(productMapper::toProductResponseDTO);
     }
 
     @Override

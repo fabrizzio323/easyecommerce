@@ -59,18 +59,46 @@ public class ProductController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
-    @Operation(
-            summary = "Get all products (Paginated)",
-            description = "Retrieve active products with pagination and sorting controls.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @PreAuthorize("hasAuthority('READ_ALL_PRODUCTS')")
-    @GetMapping
-    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
-            @PageableDefault(page = 0, size = 20, sort = "name") Pageable pageable) {
-        logger.info("Request to get paginated products");
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts(pageable));
-    }
+    
+@Operation(
+    summary = "Get products with pagination and filters",
+    description = """
+        Retrieve active products with pagination.
+
+        Optional filters:
+        - categoryId: Filter by category ID
+        - search: Search products by name
+        """,
+    security = @SecurityRequirement(name = "bearerAuth")
+)
+@PreAuthorize("hasAuthority('READ_ALL_PRODUCTS')")
+@GetMapping
+public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) String search,
+        @PageableDefault(
+            page = 0,
+            size = 20,
+            sort = "name"
+        ) Pageable pageable
+) {
+    logger.info(
+        "Getting products: categoryId={}, search={}, page={}",
+        categoryId,
+        search,
+        pageable.getPageNumber()
+    );
+
+    Page<ProductResponseDTO> products =
+        productService.getFilteredProducts(
+            categoryId,
+            search,
+            pageable
+        );
+
+    return ResponseEntity.ok(products);
+}
+
 
     @Operation(
             summary = "Get product by ID",
