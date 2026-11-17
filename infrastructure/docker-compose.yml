@@ -40,7 +40,7 @@ services:
 
   frontend:
     build:
-      context: ../../ecommerce-front
+      context: ../frontend
       dockerfile: Dockerfile
     container_name: easycommerce-frontend
     restart: unless-stopped

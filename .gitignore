@@ -47,3 +47,7 @@ specs_seguridad/
 # Guías personales de despliegue
 guias_personales/
 
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+
