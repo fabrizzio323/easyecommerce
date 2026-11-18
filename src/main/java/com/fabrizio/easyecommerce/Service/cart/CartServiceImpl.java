@@ -142,7 +142,8 @@ public class CartServiceImpl implements CartService {
         if (!item.getCart().getUser().getEmail().equals(currentEmail)) {
             log.warn("ACCESO DENEGADO: El usuario [{}] intentó modificar el CartItem [{}] perteneciente a [{}]",
                     currentEmail, cartItemId, item.getCart().getUser().getEmail());
-            throw new org.springframework.security.access.AccessDeniedException("No tienes autorización para modificar ítems de otro usuario");
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No tienes autorización para modificar ítems de otro usuario");
         }
 
         if (quantity <= 0) {
@@ -170,7 +171,8 @@ public class CartServiceImpl implements CartService {
         if (!item.getCart().getUser().getEmail().equals(currentEmail)) {
             log.warn("ACCESO DENEGADO: El usuario [{}] intentó eliminar el CartItem [{}] perteneciente a [{}]",
                     currentEmail, cartItemId, item.getCart().getUser().getEmail());
-            throw new org.springframework.security.access.AccessDeniedException("No tienes autorización para eliminar ítems de otro usuario");
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No tienes autorización para eliminar ítems de otro usuario");
         }
 
         cartItemRepository.delete(item);

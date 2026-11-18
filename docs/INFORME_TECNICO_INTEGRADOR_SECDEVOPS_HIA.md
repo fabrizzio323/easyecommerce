@@ -84,22 +84,22 @@ flowchart TB
     end
 
     %% Relaciones de clientes y túnel
-    Browser -->|HTTPS :443| CF_Proxy
-    Mobile -->|HTTPS :443| CF_Proxy
+    Browser -->|"HTTPS :443"| CF_Proxy
+    Mobile -->|"HTTPS :443"| CF_Proxy
     CF_Proxy --> CF_WAF
-    CF_WAF <==|Túnel Seguro QUIC / HTTP/2|==> CFTunnel
-    CFTunnel -->|HTTP :8081| BackApp
+    CF_WAF <-->|"Túnel Seguro QUIC / HTTP/2"| CFTunnel
+    CFTunnel -->|"HTTP :8081"| BackApp
 
     %% Relaciones internas de aplicación
-    FrontApp -->|API Requests| BackApp
-    BackApp -.->|JDBC Connection pool (HikariCP)| PostgresDB
-    PgAdminApp -.->|Gestión SQL interna| PostgresDB
+    FrontApp -->|"API Requests"| BackApp
+    BackApp -. "JDBC Connection pool (HikariCP)" .-> PostgresDB
+    PgAdminApp -. "Gestión SQL interna" .-> PostgresDB
 
     %% Relaciones CI/CD
-    GitRepo -->|Push / PR| RunnerTest
+    GitRepo -->|"Push / PR"| RunnerTest
     RunnerTest --> RunnerTrivy
     RunnerTest --> RunnerDocker
-    RunnerDocker -->|Publicación de Imagen| GHCR
+    RunnerDocker -->|"Publicación de Imagen"| GHCR
 ```
 
 ---
