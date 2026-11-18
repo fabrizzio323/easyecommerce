@@ -1,9 +1,9 @@
 package com.fabrizio.easyecommerce.controller;
 
-import com.fabrizio.easyecommerce.Service.CartService;
-import com.fabrizio.easyecommerce.dto.CartItemRequestDTO;
-import com.fabrizio.easyecommerce.dto.CartRequestDTO;
-import com.fabrizio.easyecommerce.dto.CartResponseDTO;
+import com.fabrizio.easyecommerce.Service.cart.CartService;
+import com.fabrizio.easyecommerce.dto.cart.CartItemRequestDTO;
+import com.fabrizio.easyecommerce.dto.cart.CartRequestDTO;
+import com.fabrizio.easyecommerce.dto.cart.CartResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

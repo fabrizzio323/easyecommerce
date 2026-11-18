@@ -139,8 +139,12 @@ jobs:
       - name: Validar sintaxis de docker-compose.yml
         run: docker compose -f infrastructure/docker-compose.yml config --quiet
 
-      - name: Validar sintaxis de docker-compose.tools.yml
-        run: docker compose -f infrastructure/docker-compose.tools.yml config --quiet
+      - name: Validar sintaxis de docker-compose.tools.yml (si existe)
+        if: hashFiles('infrastructure/docker-compose.tools.yml') != ''
+        run: |
+          if [ -f infrastructure/docker-compose.tools.yml ]; then
+            docker compose -f infrastructure/docker-compose.tools.yml config --quiet
+          fi
 
       - name: Validar sintaxis de configuración de Prometheus
         run: |
