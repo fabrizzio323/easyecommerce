@@ -88,7 +88,7 @@ borra los volúmenes (en n8n también se pierden los flujos y la cuenta).
 
 ## Seguridad
 
-- El `.env` real nunca se sube; en el repo solo está `.env.example`.
+- El `.env` real nunca se sube; en el repo solo está `.env`.
 - En el compose base ningún servicio abre puertos; los puertos locales
   (siempre en `127.0.0.1`) los abre el `override`, que no se usa en el servidor.
 - Las imágenes tienen versión fija.

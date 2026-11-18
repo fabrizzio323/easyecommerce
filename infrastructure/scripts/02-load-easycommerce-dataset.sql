@@ -17,6 +17,49 @@ SET LOCAL lock_timeout = 0;
 -- cart_items=1000000, orders=1000000, order_items=2449900.
 -- La suma exacta es 6.000.000.
 
+
+-- ============================================================
+-- CUENTAS LOCALES DE PRUEBA
+-- Solo para desarrollo en esta PC.
+-- No publicar estas credenciales en el repositorio.
+-- ============================================================
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO public.users (
+    city,
+    created_at,
+    email,
+    name,
+    password,
+    role,
+    street,
+    zip_code
+)
+VALUES
+    (
+        'San Salvador de Jujuy',
+        NOW(),
+        'user@test.com',
+        'Usuario de Prueba',
+        crypt('user123', gen_salt('bf', 10)),
+        'USER',
+        'Calle de Prueba 100',
+        '4600'
+    ),
+    (
+        'San Salvador de Jujuy',
+        NOW(),
+        'admin@test.com',
+        'Administrador de Prueba',
+        crypt('admin123', gen_salt('bf', 10)),
+        'ADMINISTRATOR',
+        'Calle de Prueba 200',
+        '4600'
+    )
+    ON CONFLICT (email) DO NOTHING;
+
+
 DO $$
 BEGIN
     IF (SELECT COUNT(*) FROM public.users) > 300000
@@ -29,15 +72,7 @@ BEGIN
         RAISE EXCEPTION
           'Una o más tablas ya superan el objetivo. No se insertó ningún registro.';
     END IF;
-
-    IF (SELECT COUNT(*) FROM public.users) = 0
-       OR (SELECT COUNT(*) FROM public.categories) = 0
-       OR (SELECT COUNT(*) FROM public.products) = 0 THEN
-        RAISE EXCEPTION
-          'Se necesitan al menos un usuario, una categoría y un producto existentes.';
-    END IF;
 END $$;
-
 -- 1. Categorías: completar hasta 100.
 CREATE TEMP TABLE tmp_category_ids (id bigint) ON COMMIT DROP;
 INSERT INTO tmp_category_ids SELECT id FROM public.categories;
