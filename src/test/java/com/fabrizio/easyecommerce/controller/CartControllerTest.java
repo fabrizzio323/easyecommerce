@@ -117,6 +117,16 @@ class CartControllerTest {
                 .andExpect(content().string("Cart cleared successfully"));
     }
 
+    @Test
+    void shouldClearMyCart() throws Exception {
+        String token = getUserToken();
+
+        mockMvc.perform(delete("/api/cart/clear")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Cart cleared successfully"));
+    }
+
     // 🔴 VALIDATION ERRORS
 
     @Test
