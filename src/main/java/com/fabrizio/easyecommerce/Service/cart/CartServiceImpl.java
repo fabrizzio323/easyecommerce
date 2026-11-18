@@ -85,7 +85,19 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void addItemToCart(Long userId, CartItemRequestDTO request) {
         log.info("Agregando producto ID: {} al carrito del usuario ID: {}", request.getProductId(), userId);
+        String currentEmail = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
 
+        User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User with email " + currentEmail + " not found"
+                ));
+
+        if (!currentUser.getId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "No tienes autorización para modificar el carrito de otro usuario"
+            );
+        }
         Cart cart = cartRepository.findByUserId(userId).orElseThrow(() -> {
             log.error("Carrito no encontrado para el usuario ID: {}", userId);
             return new CartNotFoundException("Cart for user with id " + userId + " not found");
