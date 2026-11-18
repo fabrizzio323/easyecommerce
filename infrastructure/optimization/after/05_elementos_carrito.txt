@@ -1,0 +1,84 @@
+﻿OPTIMIZACION 05 - ELEMENTOS DE UN CARRITO
+=========================================
+
+1. CONSULTA ANALIZADA
+---------------------
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, product_id, quantity, price_at_purchase
+FROM cart_items
+WHERE cart_id = (
+    SELECT MIN(id)
+    FROM carts
+);
+
+
+2. PLAN ANTERIOR AL INDICE
+--------------------------
+
+- Escaneo principal: Parallel Seq Scan.
+- Workers utilizados: 2.
+- Filas devueltas: 4.
+- Filas descartadas: aproximadamente 333.335 por worker.
+- Buffers: shared hit=2 read=8336.
+- Execution Time: 763.381 ms.
+- Planning Time: 5.025 ms.
+
+La consulta recorria secuencialmente la tabla cart_items
+para localizar los elementos asociados al carrito.
+
+La subconsulta MIN(id) utilizaba correctamente
+un Index Only Scan sobre carts_pkey.
+
+
+3. INDICE CREADO
+----------------
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
+idx_cart_items_cart_id
+ON public.cart_items (cart_id);
+
+
+4. PLAN POSTERIOR AL INDICE
+---------------------------
+
+- Escaneo principal: Index Scan.
+- Indice utilizado: idx_cart_items_cart_id.
+- Index Cond: (cart_id = $1).
+- Filas devueltas: 4.
+- Buffers: shared hit=7 read=4.
+- Execution Time: 1.204 ms.
+- Planning Time: 0.872 ms.
+
+La subconsulta continuo utilizando carts_pkey
+mediante Index Only Scan.
+
+
+5. COMPARACION
+--------------
+
+Tiempo anterior: 763.381 ms.
+Tiempo posterior: 1.204 ms.
+
+Reduccion aproximada: 99.84%.
+Mejora aproximada: 634 veces mas rapido.
+
+
+6. CONCLUSION
+-------------
+
+El indice sobre cart_id permitio reemplazar el escaneo
+secuencial paralelo de cart_items por un acceso directo
+mediante Index Scan.
+
+Esto redujo considerablemente la cantidad de bloques
+leidos y el tiempo necesario para recuperar los elementos
+del carrito.
+
+La subconsulta encargada de obtener el identificador
+minimo de carts ya utilizaba correctamente su clave
+primaria, por lo que no requirio modificaciones.
+
+Las mediciones corresponden a ejecuciones puntuales
+y pueden variar segun el estado de la cache y la carga
+del sistema.

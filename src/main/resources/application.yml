@@ -1,3 +1,4 @@
+
 spring:
   datasource:
     url: ${DB_NAME:jdbc:postgresql://localhost:5432/easyecommerce?options=-c%20timezone=UTC}

@@ -1,0 +1,17 @@
+﻿                                                                QUERY PLAN                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=8.87..20.42 rows=3 width=29) (actual time=0.340..0.375 rows=4 loops=1)
+   Buffers: shared hit=9
+   InitPlan 1 (returns $0)
+     ->  Index Scan using uk6dotkott2kjsp8vw4d0m25fb7 on users  (cost=0.42..8.44 rows=1 width=8) (actual time=0.137..0.138 rows=1 loops=1)
+           Index Cond: ((email)::text = 'user@test.com'::text)
+           Buffers: shared hit=4
+   ->  Index Scan using idx_orders_user_created_at on orders  (cost=0.42..11.98 rows=3 width=29) (actual time=0.339..0.373 rows=4 loops=1)
+         Index Cond: (user_id = $0)
+         Buffers: shared hit=9
+ Planning:
+   Buffers: shared hit=157
+ Planning Time: 0.952 ms
+ Execution Time: 0.417 ms
+(13 rows)
+

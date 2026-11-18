@@ -1,0 +1,175 @@
+                                                                  QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=34369.91..34372.25 rows=20 width=51) (actual time=552.275..561.307 rows=20 loops=1)
+   Buffers: shared hit=14105 read=5199
+   ->  Gather Merge  (cost=34369.91..121809.28 rows=749428 width=51) (actual time=552.273..561.302 rows=20 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=14105 read=5199
+         ->  Sort  (cost=33369.89..34306.67 rows=374714 width=51) (actual time=547.995..547.996 rows=17 loops=3)
+               Sort Key: created_at DESC
+               Sort Method: top-N heapsort  Memory: 28kB
+               Buffers: shared hit=14105 read=5199
+               Worker 0:  Sort Method: top-N heapsort  Memory: 29kB
+               Worker 1:  Sort Method: top-N heapsort  Memory: 29kB
+               ->  Parallel Seq Scan on products  (cost=0.00..23398.88 rows=374714 width=51) (actual time=0.058..459.803 rows=300008 loops=3)
+                     Filter: active
+                     Rows Removed by Filter: 33334
+                     Buffers: shared hit=14033 read=5199
+ Planning:
+   Buffers: shared hit=82 read=5
+ Planning Time: 2.610 ms
+ Execution Time: 562.012 ms
+(20 rows)
+
+                                                                        QUERY PLAN                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=25551.81..25554.14 rows=20 width=43) (actual time=61.602..69.968 rows=20 loops=1)
+   Buffers: shared hit=14203 read=5103
+   InitPlan 2 (returns $1)
+     ->  Result  (cost=0.29..0.30 rows=1 width=8) (actual time=0.136..0.137 rows=1 loops=1)
+           Buffers: shared hit=2
+           InitPlan 1 (returns $0)
+             ->  Limit  (cost=0.14..0.29 rows=1 width=8) (actual time=0.133..0.134 rows=1 loops=1)
+                   Buffers: shared hit=2
+                   ->  Index Only Scan using categories_pkey on categories  (cost=0.14..14.89 rows=100 width=8) (actual time=0.133..0.133 rows=1 loops=1)
+                         Index Cond: (id IS NOT NULL)
+                         Heap Fetches: 1
+                         Buffers: shared hit=2
+   ->  Gather Merge  (cost=25551.51..26523.88 rows=8334 width=43) (actual time=61.600..69.961 rows=20 loops=1)
+         Workers Planned: 2
+         Params Evaluated: $1
+         Workers Launched: 2
+         Buffers: shared hit=14203 read=5103
+         ->  Sort  (cost=24551.49..24561.90 rows=4167 width=43) (actual time=56.508..56.509 rows=11 loops=3)
+               Sort Key: products.price
+               Sort Method: top-N heapsort  Memory: 27kB
+               Buffers: shared hit=14201 read=5103
+               Worker 0:  Sort Method: quicksort  Memory: 25kB
+               Worker 1:  Sort Method: quicksort  Memory: 25kB
+               ->  Parallel Seq Scan on products  (cost=0.00..24440.60 rows=4167 width=43) (actual time=36.324..55.566 rows=3337 loops=3)
+                     Filter: (category_id = $1)
+                     Rows Removed by Filter: 330004
+                     Buffers: shared hit=14129 read=5103
+ Planning:
+   Buffers: shared hit=70 read=2
+ Planning Time: 1.428 ms
+ Execution Time: 70.033 ms
+(31 rows)
+
+                                                                QUERY PLAN                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=34570.81..34571.04 rows=2 width=29) (actual time=634.836..639.584 rows=4 loops=1)
+   Buffers: shared hit=18 read=28354
+   InitPlan 1 (returns $0)
+     ->  Index Scan using uk6dotkott2kjsp8vw4d0m25fb7 on users  (cost=0.42..8.44 rows=1 width=8) (actual time=0.067..0.069 rows=1 loops=1)
+           Index Cond: ((email)::text = 'user@test.com'::text)
+           Buffers: shared hit=4
+   ->  Gather Merge  (cost=34562.37..34562.60 rows=2 width=29) (actual time=634.834..639.578 rows=4 loops=1)
+         Workers Planned: 2
+         Params Evaluated: $0
+         Workers Launched: 2
+         Buffers: shared hit=18 read=28354
+         ->  Sort  (cost=33562.34..33562.35 rows=1 width=29) (actual time=624.414..624.416 rows=1 loops=3)
+               Sort Key: orders.created_at DESC
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=14 read=28354
+               Worker 0:  Sort Method: quicksort  Memory: 25kB
+               Worker 1:  Sort Method: quicksort  Memory: 25kB
+               ->  Parallel Seq Scan on orders  (cost=0.00..33562.33 rows=1 width=29) (actual time=413.263..622.328 rows=1 loops=3)
+                     Filter: (user_id = $0)
+                     Rows Removed by Filter: 333334
+                     Buffers: shared read=28354
+ Planning:
+   Buffers: shared hit=64 read=4
+ Planning Time: 2.399 ms
+ Execution Time: 639.628 ms
+(25 rows)
+
+                                                                 QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=37334.24..37336.58 rows=20 width=30) (actual time=133.962..138.862 rows=20 loops=1)
+   Buffers: shared hit=170 read=28257
+   InitPlan 1 (returns $0)
+     ->  Limit  (cost=0.00..0.04 rows=1 width=7) (actual time=0.204..0.206 rows=1 loops=1)
+           Buffers: shared read=1
+           ->  Seq Scan on orders orders_1  (cost=0.00..38354.00 rows=1000000 width=7) (actual time=0.204..0.204 rows=1 loops=1)
+                 Buffers: shared read=1
+   ->  Gather Merge  (cost=37334.20..61641.53 rows=208334 width=30) (actual time=133.959..138.852 rows=20 loops=1)
+         Workers Planned: 2
+         Params Evaluated: $0
+         Workers Launched: 2
+         Buffers: shared hit=170 read=28257
+         ->  Sort  (cost=36334.18..36594.60 rows=104167 width=30) (actual time=125.670..125.673 rows=17 loops=3)
+               Sort Key: orders.created_at DESC
+               Sort Method: top-N heapsort  Memory: 27kB
+               Buffers: shared hit=170 read=28256
+               Worker 0:  Sort Method: top-N heapsort  Memory: 27kB
+               Worker 1:  Sort Method: top-N heapsort  Memory: 27kB
+               ->  Parallel Seq Scan on orders  (cost=0.00..33562.33 rows=104167 width=30) (actual time=12.425..101.312 rows=83334 loops=3)
+                     Filter: ((status)::text = ($0)::text)
+                     Rows Removed by Filter: 250001
+                     Buffers: shared hit=98 read=28256
+ Planning Time: 0.155 ms
+ Execution Time: 138.916 ms
+(24 rows)
+
+                                                                     QUERY PLAN                                                                      
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.46..14543.19 rows=4 width=26) (actual time=2.548..199.361 rows=4 loops=1)
+   Workers Planned: 2
+   Params Evaluated: $1
+   Workers Launched: 2
+   Buffers: shared read=8338
+   InitPlan 2 (returns $1)
+     ->  Result  (cost=0.45..0.46 rows=1 width=8) (actual time=0.800..0.803 rows=1 loops=1)
+           Buffers: shared read=4
+           InitPlan 1 (returns $0)
+             ->  Limit  (cost=0.42..0.45 rows=1 width=8) (actual time=0.793..0.796 rows=1 loops=1)
+                   Buffers: shared read=4
+                   ->  Index Only Scan using carts_pkey on carts  (cost=0.42..7123.42 rows=250000 width=8) (actual time=0.790..0.791 rows=1 loops=1)
+                         Index Cond: (id IS NOT NULL)
+                         Heap Fetches: 0
+                         Buffers: shared read=4
+   ->  Parallel Seq Scan on cart_items  (cost=0.00..13542.33 rows=2 width=26) (actual time=77.653..184.697 rows=1 loops=3)
+         Filter: (cart_id = $1)
+         Rows Removed by Filter: 333335
+         Buffers: shared read=8334
+ Planning:
+   Buffers: shared hit=59 read=4
+ Planning Time: 4.099 ms
+ Execution Time: 199.422 ms
+(23 rows)
+
+                                                                       QUERY PLAN                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.90..34185.01 rows=2 width=51) (actual time=2.908..442.680 rows=11 loops=1)
+   Workers Planned: 2
+   Params Evaluated: $1
+   Workers Launched: 2
+   Buffers: shared hit=45 read=20420
+   InitPlan 2 (returns $1)
+     ->  Result  (cost=0.46..0.47 rows=1 width=8) (actual time=1.272..1.275 rows=1 loops=1)
+           Buffers: shared read=4
+           InitPlan 1 (returns $0)
+             ->  Limit  (cost=0.42..0.46 rows=1 width=8) (actual time=1.264..1.266 rows=1 loops=1)
+                   Buffers: shared read=4
+                   ->  Index Only Scan using orders_pkey on orders  (cost=0.42..39444.43 rows=1000000 width=8) (actual time=1.262..1.262 rows=1 loops=1)
+                         Index Cond: (id IS NOT NULL)
+                         Heap Fetches: 0
+                         Buffers: shared read=4
+   ->  Nested Loop  (cost=0.42..33184.34 rows=1 width=51) (actual time=283.395..428.601 rows=4 loops=3)
+         Buffers: shared hit=45 read=20416
+         ->  Parallel Seq Scan on order_items oi  (cost=0.00..33175.90 rows=1 width=26) (actual time=283.330..428.523 rows=4 loops=3)
+               Filter: (order_id = $1)
+               Rows Removed by Filter: 816633
+               Buffers: shared read=20416
+         ->  Index Scan using products_pkey on products p  (cost=0.42..8.44 rows=1 width=33) (actual time=0.018..0.018 rows=1 loops=11)
+               Index Cond: (id = oi.product_id)
+               Buffers: shared hit=45
+ Planning:
+   Buffers: shared hit=117 read=3
+ Planning Time: 5.560 ms
+ Execution Time: 442.795 ms
+(28 rows)
+

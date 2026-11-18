@@ -1,0 +1,89 @@
+﻿OPTIMIZACION 06 - DETALLE DE PEDIDOS
+====================================
+
+1. CONSULTA ANALIZADA
+---------------------
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT oi.id, oi.order_id, oi.product_id, oi.quantity, oi.price
+FROM order_items oi
+WHERE oi.order_id = (
+    SELECT MIN(id)
+    FROM orders
+);
+
+
+2. PLAN ANTERIOR AL INDICE
+--------------------------
+
+- Escaneo principal: Parallel Seq Scan.
+- Workers utilizados: 2.
+- Filas devueltas: 11.
+- Filas descartadas: aproximadamente 816.633 por worker.
+- Buffers: shared hit=8077 read=12343.
+- Execution Time: 123.118 ms.
+- Planning Time: 0.647 ms.
+
+La consulta recorria secuencialmente order_items
+para localizar los elementos correspondientes al pedido.
+
+La subconsulta MIN(id) utilizaba correctamente
+un Index Only Scan sobre orders_pkey.
+
+
+3. INDICE CREADO
+----------------
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
+idx_order_items_order_id
+ON public.order_items (order_id);
+
+
+4. PLAN POSTERIOR AL INDICE
+---------------------------
+
+- Escaneo principal: Index Scan.
+- Indice utilizado: idx_order_items_order_id.
+- Index Cond: (order_id = $1).
+- Filas devueltas: 11.
+- Buffers: shared hit=8 read=1.
+- Execution Time: 0.207 ms.
+- Planning Time: 1.180 ms.
+
+La subconsulta continuo utilizando orders_pkey
+mediante Index Only Scan.
+
+
+5. COMPARACION
+--------------
+
+Tiempo anterior: 123.118 ms.
+Tiempo posterior: 0.207 ms.
+
+Reduccion aproximada: 99.83%.
+Mejora aproximada: 595 veces mas rapido.
+
+El benchmark inicial habia registrado 442.795 ms.
+Se conserva ese valor como referencia original.
+
+
+6. CONCLUSION
+-------------
+
+El indice sobre order_id permitio reemplazar el escaneo
+secuencial paralelo de order_items por un acceso directo
+mediante Index Scan.
+
+La consulta pudo recuperar los 11 elementos del pedido
+sin recorrer mas de dos millones de registros.
+
+La cantidad de bloques leidos se redujo considerablemente,
+pasando de 12.343 bloques leidos a solamente 1.
+
+La subconsulta encargada de obtener el identificador
+minimo de orders ya utilizaba correctamente su clave
+primaria, por lo que no requirio modificaciones.
+
+Las mediciones corresponden a ejecuciones puntuales
+y pueden variar segun el estado de la cache y la carga
+del sistema.

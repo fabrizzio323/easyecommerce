@@ -1,0 +1,83 @@
+﻿OPTIMIZACIÓN 04 - BÚSQUEDA DE PEDIDOS POR ESTADO
+================================================
+
+1. CONSULTA ORIGINAL
+-------------------
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, user_id, total_amount, created_at
+FROM orders
+WHERE status = (
+    SELECT status
+    FROM orders
+    LIMIT 1
+)
+ORDER BY created_at DESC
+LIMIT 20;
+
+
+2. PLAN ANTERIOR AL ÍNDICE
+--------------------------
+
+- Tipo de escaneo: Parallel Seq Scan
+- Ordenamiento: Gather Merge + top-N heapsort
+- Buffers: shared hit=174 read=28253
+- Execution Time: 161.832 ms
+- Planning Time: 0.864 ms
+
+La consulta recorría una gran cantidad de registros de orders
+para filtrar por estado y posteriormente ordenar los resultados.
+
+
+3. ÍNDICE CREADO
+----------------
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
+idx_orders_status_created_at
+ON public.orders (status, created_at DESC);
+
+
+4. PLAN POSTERIOR AL ÍNDICE
+--------------------------
+
+- Tipo de escaneo: Index Scan
+- Índice utilizado: idx_orders_status_created_at
+- Condición: status = ($0)
+- Ordenamiento adicional: eliminado
+- Buffers: shared hit=20 read=4
+- Execution Time: 0.751 ms
+- Planning Time: 0.707 ms
+
+
+5. COMPARACIÓN
+--------------
+
+Tiempo anterior: 161.832 ms
+Tiempo posterior: 0.751 ms
+
+Reducción aproximada del tiempo: 99.54 %
+Mejora aproximada: 215.5 veces más rápido.
+
+
+6. CONCLUSIÓN
+-------------
+
+El índice compuesto sobre (status, created_at DESC) permitió
+evitar el escaneo secuencial paralelo de la tabla orders y
+el ordenamiento adicional de los resultados.
+
+PostgreSQL utilizó directamente el índice para filtrar los
+pedidos por estado y recuperarlos ordenados por fecha.
+
+La cantidad de buffers leídos también se redujo
+considerablemente: de 28.253 a 4.
+
+Nota metodológica:
+La consulta utiliza una subconsulta con LIMIT 1 sin ORDER BY.
+Por lo tanto, el estado seleccionado no está determinado
+de manera estable. El índice puede modificar qué fila se
+obtiene primero. Esta particularidad debe tenerse en cuenta
+al interpretar los resultados del benchmark.
+
+Los tiempos corresponden a mediciones individuales y pueden
+variar según el estado de la caché y la carga del sistema.

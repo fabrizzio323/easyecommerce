@@ -134,7 +134,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Preparar archivo de entorno para Compose
-        run: cp infrastructure/.env infrastructure/.env
+        run: cp infrastructure/.env.example infrastructure/.env.example
 
       - name: Validar sintaxis de docker-compose.yml
         run: docker compose -f infrastructure/docker-compose.yml config --quiet

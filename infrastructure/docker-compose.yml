@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-easyecommerce}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env.example}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +30,7 @@ services:
     environment:
       DB_NAME: jdbc:postgresql://db:5432/${POSTGRES_DB:-easyecommerce}
       DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env.example}
       PORT: 8081
       SQL_INIT_MODE: ${SQL_INIT_MODE:-always}
     depends_on:
@@ -62,7 +62,7 @@ services:
       - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@easycommerce.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Defini PGADMIN_PASSWORD en .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Defini PGADMIN_PASSWORD en .env.example}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -92,7 +92,7 @@ services:
       - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Defini GRAFANA_PASSWORD en .env}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Defini GRAFANA_PASSWORD en .env.example}
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
@@ -105,7 +105,7 @@ services:
     environment:
       DATA_SOURCE_URI: db:5432/${POSTGRES_DB:-easyecommerce}?sslmode=disable
       DATA_SOURCE_USER: ${POSTGRES_USER:-postgres}
-      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env.example}
     networks:
       - easycommerce-network
 
@@ -141,7 +141,7 @@ services:
 
   # ---------- Automatizacion ----------
   n8n:
-    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:?Defini N8N_VERSION en .env (version estable y parcheada)}
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:?Defini N8N_VERSION en .env.example (version estable y parcheada)}
     container_name: easycommerce-n8n
     restart: unless-stopped
     ports:
@@ -155,7 +155,7 @@ services:
       N8N_WEBHOOK_URL: ${N8N_PUBLIC_URL:-http://localhost:5678/}
       NODE_ENV: production
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
-      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Defini N8N_ENCRYPTION_KEY en .env}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Defini N8N_ENCRYPTION_KEY en .env.example}
       N8N_DIAGNOSTICS_ENABLED: "false"
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
       NODES_EXCLUDE: '["n8n-nodes-base.executeCommand","n8n-nodes-base.localFileTrigger","n8n-nodes-base.git","n8n-nodes-base.ssh"]'
@@ -184,9 +184,9 @@ services:
     environment:
       PGHOST: db
       PGUSER: ${POSTGRES_USER:-postgres}
-      PGPASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Defini POSTGRES_PASSWORD en .env.example}
       PGDATABASE: ${POSTGRES_DB:-easyecommerce}
-      BACKUP_TOKEN: ${BACKUP_TOKEN:?Defini BACKUP_TOKEN en .env}
+      BACKUP_TOKEN: ${BACKUP_TOKEN:?Defini BACKUP_TOKEN en .env.example}
     volumes:
       - backups_data:/backups
     depends_on:
@@ -203,7 +203,7 @@ services:
     environment:
       MARIADB_DATABASE: ${MANTIS_DB_NAME:-bugtracker}
       MARIADB_USER: ${MANTIS_DB_USER:-mantisbt}
-      MARIADB_PASSWORD: ${MANTIS_DB_PASSWORD:?Defini MANTIS_DB_PASSWORD en .env}
+      MARIADB_PASSWORD: ${MANTIS_DB_PASSWORD:?Defini MANTIS_DB_PASSWORD en .env.example}
       MARIADB_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - mantis_db_data:/var/lib/mysql
@@ -216,7 +216,7 @@ services:
     networks:
       - easycommerce-network
   mantisbt:
-    image: xlrl/mantisbt:${MANTIS_VERSION:?Defini MANTIS_VERSION en .env (tag fijo, no latest)}
+    image: xlrl/mantisbt:${MANTIS_VERSION:?Defini MANTIS_VERSION en .env.example (tag fijo, no latest)}
     container_name: easycommerce-mantisbt
     restart: unless-stopped
     environment:
