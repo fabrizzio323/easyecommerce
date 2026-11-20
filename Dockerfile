@@ -1,25 +1,34 @@
-# -------- BUILD STAGE --------
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+# ==========================================
+# BUILD STAGE
+# ==========================================
+FROM maven:3.9.11-eclipse-temurin-25 AS build
+
 WORKDIR /app
 
-# Cache dependencies
+# Copiar configuración Maven
 COPY pom.xml .
-RUN mvn -B -q -e -DskipTests dependency:resolve
 
-# Copy source
+# Descargar dependencias
+RUN mvn -B -DskipTests dependency:resolve
+
+# Copiar código fuente
 COPY src ./src
 
-# Build jar
-RUN mvn clean package -DskipTests
+# Compilar proyecto y generar JAR
+RUN mvn -B -e clean package -DskipTests
 
-# -------- RUNTIME STAGE --------
-FROM eclipse-temurin:21-jre-jammy
+
+# ==========================================
+# RUNTIME STAGE
+# ==========================================
+FROM eclipse-temurin:25-jre
+
 WORKDIR /app
 
-# Copiar jar específico (más seguro)
-COPY --from=build /app/target/*jar /app/app.jar
+# Copiar JAR generado
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8081
 
-# JVM más flexible (mejor para cloud)
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

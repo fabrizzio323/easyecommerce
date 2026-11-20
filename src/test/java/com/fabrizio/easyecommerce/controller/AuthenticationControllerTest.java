@@ -1,7 +1,7 @@
 package com.fabrizio.easyecommerce.controller;
 
-import com.fabrizio.easyecommerce.dto.AuthenticationRequest;
-import com.fabrizio.easyecommerce.dto.RegisterRequest;
+import com.fabrizio.easyecommerce.dto.authentication.AuthenticationRequest;
+import com.fabrizio.easyecommerce.dto.authentication.RegisterRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,11 +16,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AuthenticationControllerTest {
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -76,10 +79,25 @@ public class AuthenticationControllerTest {
         login.setPassword("123456");
 
         mockMvc.perform(post("/api/auth/login")
+                        .header("Origin", "http://localhost:5173")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
                 .andExpect(jsonPath("$.jwt").exists());
+    }
+
+    @Test
+    void shouldAllowCorsPreflightForLogin() throws Exception {
+        mockMvc.perform(options("/api/auth/login")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "POST")
+                        .header("Access-Control-Request-Headers", "Content-Type, Authorization"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Methods", containsString("POST")))
+                .andExpect(header().string("Access-Control-Allow-Headers", containsString("Content-Type")))
+                .andExpect(header().string("Access-Control-Allow-Headers", containsString("Authorization")));
     }
 
     @Test

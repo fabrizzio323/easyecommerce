@@ -1,9 +1,10 @@
 package com.fabrizio.easyecommerce.controller;
+import lombok.RequiredArgsConstructor;
 
 
-import com.fabrizio.easyecommerce.Service.ProductService;
-import com.fabrizio.easyecommerce.dto.ProductRequestDTO;
-import com.fabrizio.easyecommerce.dto.ProductResponseDTO;
+import com.fabrizio.easyecommerce.Service.product.ProductService;
+import com.fabrizio.easyecommerce.dto.product.ProductRequestDTO;
+import com.fabrizio.easyecommerce.dto.product.ProductResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 
@@ -48,44 +52,53 @@ import java.util.List;
     - Active status (soft delete)
     """
 )
+@RequiredArgsConstructor
 public class ProductController {
-    @Autowired
-    private ProductService productService;
+
+    private final ProductService productService;
 
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
-    @Operation(
-            summary = "Get all products",
-            description = """
-        Retrieve all active products with their category information.
-        Requires READ_ALL_PRODUCTS permission.
+    
+@Operation(
+    summary = "Get products with pagination and filters",
+    description = """
+        Retrieve active products with pagination.
 
-        📋 Returns:
-        - Product ID, name, description
-        - Price and stock information
-        - Category name
-        - Creation date
+        Optional filters:
+        - categoryId: Filter by category ID
+        - search: Search products by name
         """,
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Products retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No products found"),
-            @ApiResponse(responseCode = "403", description = "Access denied (missing READ_ALL_PRODUCTS permission)")
-    })
-    @PreAuthorize("hasAuthority('READ_ALL_PRODUCTS')")
-    @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts(){
-        logger.info("Request to get all products");
-        try {
-            List<ProductResponseDTO> products = productService.getAllProducts();
-            logger.info("Retrieved {} products successfully", products.size());
-            return ResponseEntity.status(HttpStatus.OK).body(products);
-        } catch (Exception e) {
-            logger.error("Failed to retrieve products", e);
-            throw e;
-        }
-    }
+    security = @SecurityRequirement(name = "bearerAuth")
+)
+@PreAuthorize("hasAuthority('READ_ALL_PRODUCTS')")
+@GetMapping
+public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) String search,
+        @PageableDefault(
+            page = 0,
+            size = 20,
+            sort = "name"
+        ) Pageable pageable
+) {
+    logger.info(
+        "Getting products: categoryId={}, search={}, page={}",
+        categoryId,
+        search,
+        pageable.getPageNumber()
+    );
+
+    Page<ProductResponseDTO> products =
+        productService.getFilteredProducts(
+            categoryId,
+            search,
+            pageable
+        );
+
+    return ResponseEntity.ok(products);
+}
+
 
     @Operation(
             summary = "Get product by ID",

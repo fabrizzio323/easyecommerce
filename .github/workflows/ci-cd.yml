@@ -1,0 +1,240 @@
+name: EasyCommerce CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/ci-cd-unified
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  # ========================================================
+  # JOB 1: Compilación y Pruebas Unitarias del Backend (Java 25)
+  # ========================================================
+  backend-test:
+    name: Backend Build & Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 25 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+
+      - name: Dar permisos de ejecución a Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Compilar y ejecutar pruebas unitarias con Maven
+        run: ./mvnw -B clean test
+
+      - name: Publicar reporte de pruebas Surefire (Artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-test-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+  # ========================================================
+  # JOB 2: Análisis de Seguridad en Dependencias Backend (SCA - Punto 14)
+  # ========================================================
+  security-scan:
+    name: Security Vulnerability Scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: backend-test
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 25 y cache Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+
+      - name: Dar permisos a Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Pre-cargar dependencias Maven en cache local
+        run: ./mvnw -B dependency:resolve -DskipTests
+
+      - name: Escaneo de vulnerabilidades con Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0' # Genera el reporte de hallazgos para la cátedra sin romper el build
+
+  # ========================================================
+  # JOB 3: Validación y Compilación del Frontend (React + Vite)
+  # ========================================================
+  frontend-ci:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias limpias con npm ci
+        run: npm ci
+
+      - name: Ejecutar linter (ESLint)
+        run: npm run lint
+
+      - name: Compilar frontend de producción (Vite)
+        run: npm run build
+
+      - name: Publicar build estático del frontend (Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  # ========================================================
+  # JOB 4: Validación y Linting de Infraestructura (Docker Compose & Prometheus)
+  # ========================================================
+  infra-validate:
+    name: Validate Infrastructure & Compose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Preparar archivo de entorno para Compose
+        run: cp infrastructure/.env.example infrastructure/.env.example
+
+      - name: Validar sintaxis de docker-compose.yml
+        run: docker compose -f infrastructure/docker-compose.yml config --quiet
+
+      - name: Validar sintaxis de docker-compose.tools.yml (si existe)
+        if: hashFiles('infrastructure/docker-compose.tools.yml') != ''
+        run: |
+          if [ -f infrastructure/docker-compose.tools.yml ]; then
+            docker compose -f infrastructure/docker-compose.tools.yml config --quiet
+          fi
+
+      - name: Validar sintaxis de configuración de Prometheus
+        run: |
+          docker run --rm -v ${{ github.workspace }}/infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml \
+            --entrypoint /bin/promtool prom/prometheus:v2.53.0 check config /etc/prometheus/prometheus.yml
+
+  # ========================================================
+  # JOB 5: Construcción y Empaquetado Docker del Backend
+  # ========================================================
+  docker-backend-build:
+    name: Docker Build & Package Backend
+    runs-on: ubuntu-latest
+    needs: [backend-test, infra-validate]
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Iniciar sesión en GitHub Container Registry (GHCR)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extraer metadatos para Docker Backend (Tags & Labels)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/backend
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Construir imagen Docker Backend (y publicar si es develop/main)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ========================================================
+  # JOB 6: Construcción y Empaquetado Docker del Frontend
+  # ========================================================
+  docker-frontend-build:
+    name: Docker Build & Package Frontend
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, infra-validate]
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Iniciar sesión en GitHub Container Registry (GHCR)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extraer metadatos para Docker Frontend (Tags & Labels)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Construir imagen Docker Frontend (y publicar si es develop/main)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

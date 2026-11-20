@@ -1,8 +1,9 @@
+
 spring:
   datasource:
-    url: ${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${DB_NAME:jdbc:postgresql://localhost:5432/easyecommerce?options=-c%20timezone=UTC}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:CAMBIAR_POR_PASSWORD_SEGURA}
 
   jpa:
     hibernate:
@@ -18,6 +19,7 @@ spring:
     init:
       mode: ${SQL_INIT_MODE:always}
       data-locations: classpath:import.sql
+      continue-on-error: true
 
   output:
     ansi:
@@ -28,13 +30,23 @@ spring:
 
 server:
   port: ${PORT:8081}
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
 
-# JWT security configuration
-# the secret key is generated automatically in a secure way when the application starts (see JwtConfig.java)
 security:
   jwt:
     expiration-minutes: 30
-    # the seecret key is expirable after 30 minutes
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+    prometheus:
+      enabled: true
+

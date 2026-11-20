@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment files, Secrets & Binaries ###
+.env
+.evn
+*.env
+*.env.*
+!*.env.example
+!.env.example
+*.zip
+
+# Specs internas de remediación
+specs_seguridad/
+
+# Guías personales de despliegue
+guias_personales/
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+

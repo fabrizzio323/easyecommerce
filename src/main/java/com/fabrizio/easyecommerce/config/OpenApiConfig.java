@@ -6,10 +6,13 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 @OpenAPIDefinition(
@@ -26,7 +29,11 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         logger.info("Configuring OpenAPI/Swagger documentation");
-        OpenAPI openAPI = new OpenAPI()
+
+        Server server = new Server().url("/");
+
+        return new OpenAPI()
+                .servers(List.of(server))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
@@ -37,7 +44,5 @@ public class OpenApiConfig {
                                         .bearerFormat("JWT")
                         )
                 );
-        logger.info("OpenAPI configuration completed with JWT Bearer authentication");
-        return openAPI;
     }
 }

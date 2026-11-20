@@ -1,8 +1,9 @@
 package com.fabrizio.easyecommerce.controller;
+import lombok.RequiredArgsConstructor;
 
-import com.fabrizio.easyecommerce.Service.CategoryService;
-import com.fabrizio.easyecommerce.dto.CategoryRequestDTO;
-import com.fabrizio.easyecommerce.dto.CategoryResponseDTO;
+import com.fabrizio.easyecommerce.Service.category.CategoryService;
+import com.fabrizio.easyecommerce.dto.category.CategoryRequestDTO;
+import com.fabrizio.easyecommerce.dto.category.CategoryResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,10 +41,11 @@ import java.util.List;
     - DELETE_ONE_CATEGORY → delete category
     """
 )
+@RequiredArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+
+    private final CategoryService categoryService;
 
     @Operation(
             summary = "Get all categories",

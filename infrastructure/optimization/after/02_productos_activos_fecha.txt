@@ -1,0 +1,67 @@
+﻿EASYCOMMERCE - OPTIMIZACION 02
+========================================
+Consulta: Productos activos ordenados por fecha
+Motor: PostgreSQL 15
+
+1. CONSULTA ANALIZADA
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, name, price, stock, created_at
+FROM products
+WHERE active = TRUE
+ORDER BY created_at DESC
+LIMIT 20;
+
+2. PLAN ANTES DE LA OPTIMIZACION
+
+Parallel Seq Scan on products
+Sort Key: created_at DESC
+Sort Method: top-N heapsort
+Buffers: shared hit=3374 read=15930
+Execution Time: 294.524 ms
+
+3. INDICE CREADO
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
+idx_products_active_created_at
+ON public.products (created_at DESC)
+WHERE active = TRUE;
+
+4. PLAN DESPUES DE LA OPTIMIZACION
+
+Index Scan using idx_products_active_created_at
+Buffers: shared hit=5
+Planning Time: 1.959 ms
+Execution Time: 0.228 ms
+
+5. COMPARACION
+
+Tiempo anterior: 294.524 ms
+Tiempo posterior: 0.228 ms
+Reduccion aproximada: 99.92 %
+Mejora aproximada: 1292 veces mas rapido.
+
+6. ANALISIS TECNICO
+
+Antes, PostgreSQL realizaba un escaneo secuencial paralelo
+de la tabla products, filtraba los productos activos y
+ordenaba los resultados por fecha.
+
+Despues, utiliza un indice parcial ordenado por created_at
+DESC, que contiene unicamente productos activos.
+
+Esto permite recuperar directamente los primeros 20
+registros sin recorrer toda la tabla ni ejecutar un Sort.
+
+7. OBSERVACIONES
+
+La medicion posterior se realizo con bloques en cache
+(shared hit=5). Los resultados corresponden a una ejecucion
+y deben validarse con varias mediciones adicionales.
+
+El indice parcial es especialmente adecuado para esta
+consulta porque coincide con el filtro active = TRUE.
+
+========================================
+EASYCOMMERCE - FIN DE OPTIMIZACION 02
+

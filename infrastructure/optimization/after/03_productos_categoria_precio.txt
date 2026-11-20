@@ -1,0 +1,67 @@
+﻿EASYCOMMERCE - OPTIMIZACION 03
+========================================
+Consulta: Productos por categoria ordenados por precio
+Motor: PostgreSQL 15
+
+1. CONSULTA ANALIZADA
+
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, name, price, stock
+FROM products
+WHERE category_id = (
+    SELECT MIN(id) FROM categories
+)
+ORDER BY price ASC
+LIMIT 20;
+
+2. PLAN ANTES DE LA OPTIMIZACION
+
+Parallel Seq Scan on products
+Sort Key: products.price
+Sort Method: top-N heapsort
+Buffers: shared hit=3664 read=15642
+Execution Time: 88.989 ms
+
+3. INDICE CREADO
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
+idx_products_category_price
+ON public.products (category_id, price ASC);
+
+4. PLAN DESPUES DE LA OPTIMIZACION
+
+Index Scan using idx_products_category_price
+Index Cond: (category_id = $1)
+Buffers: shared hit=12 read=13
+Planning Time: 2.323 ms
+Execution Time: 6.183 ms
+
+5. COMPARACION
+
+Tiempo anterior: 88.989 ms
+Tiempo posterior: 6.183 ms
+Reduccion aproximada: 93.05 %
+Mejora aproximada: 14.4 veces mas rapido.
+
+6. ANALISIS TECNICO
+
+Antes, PostgreSQL realizaba un escaneo secuencial paralelo
+de products, filtraba los registros por categoria y
+ordenaba los resultados por precio.
+
+Despues, utiliza un indice compuesto por category_id y
+price, permitiendo localizar los productos de la categoria
+y recorrerlos directamente en orden ascendente de precio.
+
+Se eliminaron el escaneo secuencial y la operacion Sort.
+
+7. OBSERVACIONES
+
+La medicion posterior corresponde a una ejecucion.
+Los resultados pueden variar segun el estado de la cache.
+
+El indice tambien ocupa espacio adicional y genera
+un costo de mantenimiento durante las escrituras.
+
+========================================
+EASYCOMMERCE - FIN DE OPTIMIZACION 03

@@ -1,0 +1,1592 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Easy E-commerce API",
+    "description": "API for managing products, categories, and user authentication in an e-commerce application",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Order Resource",
+      "description": "Endpoints for processing checkouts and managing customer orders.\n\n🚀 **Workflow**:\n- **Checkout**: Converts the current Cart into a finalized Order and **captures the user's shipping address**.\n- **Stock**: Automatically deducted during checkout.\n- **Shipping Details**: Every order stores a snapshot of the address (Street, City, ZipCode) to ensure delivery consistency.\n"
+    },
+    {
+      "name": "Product Resource",
+      "description": "Endpoints for managing products in the e-commerce system.\n\n🔐 Authentication required:\nYou must be logged in and provide a valid JWT token.\n\n📌 How to use:\n1. Login at /api/auth/login\n2. Copy the JWT token\n3. Click 'Authorize' in Swagger and paste: Bearer <your_token>\n\n⚠️ Permissions:\n- READ_ALL_PRODUCTS → view all products\n- READ_ONE_PRODUCT → view single product\n- SAVE_ONE_PRODUCT → create product (ADMIN only)\n- UPDATE_ONE_PRODUCT → update product (ADMIN only)\n- DELETE_ONE_PRODUCT → delete product (ADMIN only)\n\n📦 Product data includes:\n- Basic info (name, description, price, stock)\n- Category relationship\n- Active status (soft delete)\n"
+    },
+    {
+      "name": "Authentication",
+      "description": "Endpoints responsible for user registration, authentication, and session validation.\n\n🔐 **Authentication Flow**:\n1. Register with shipping details using `/register`\n2. Login using `/login`\n3. Use the JWT token in headers: `Authorization: Bearer <token>`\n\n👤 **Preloaded Users (from import.sql)**:\n- **ADMIN**: admin@test.com / admin123 (Location: Av. Fascio 123, San Salvador de Jujuy)\n- **USER**: user@test.com / user123 (Location: Belgrano 450, San Salvador de Jujuy)\n"
+    },
+    {
+      "name": "Cart Resource",
+      "description": "Endpoints for managing shopping carts in the e-commerce system.\n\n🔐 Authentication required:\nValid JWT token is mandatory for all operations.\n\n🛒 Cart Logic:\n- Each user has one unique cart.\n- Prices are captured at the moment an item is added.\n- Automatic cart creation is supported during retrieval.\n\n⚠️ Permissions:\n- READ_ONE_CART → view personal cart\n- SAVE_ONE_CART → initialize a cart for a specific user\n- ADD_ITEM_CART → add products to cart\n- UPDATE_QUANTITY_ITEM_CART → modify item quantities\n- DELETE_ITEM_CART → remove specific items\n- CLEAR_CART → empty the entire cart\n"
+    },
+    {
+      "name": "Category Resource",
+      "description": "Endpoints for managing product categories.\n\n🔐 Authentication required:\nYou must be logged in and provide a valid JWT token.\n\n📌 How to use:\n1. Login at /api/auth/login\n2. Copy the JWT token\n3. Click 'Authorize' in Swagger and paste: Bearer <your_token>\n\n⚠️ Permissions:\n- READ_ALL_CATEGORIES → view categories\n- SAVE_ONE_CATEGORY → create category\n- UPDATE_ONE_CATEGORY → update category\n- DELETE_ONE_CATEGORY → delete category\n"
+    }
+  ],
+  "paths": {
+    "/api/products/{id}": {
+      "get": {
+        "tags": [
+          "Product Resource"
+        ],
+        "summary": "Get product by ID",
+        "description": "Retrieve a specific product by its ID.\nRequires READ_ONE_PRODUCT permission.\n\n📋 Returns:\n- Complete product information\n- Category details\n- Stock and pricing info\n",
+        "operationId": "getProductById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductResponseDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied (missing READ_ONE_PRODUCT permission)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Product Resource"
+        ],
+        "summary": "Update existing product",
+        "description": "Update an existing product by its ID.\nRequires UPDATE_ONE_PRODUCT permission (ADMIN only).\n\n📝 Updatable fields:\n- name: Product name\n- description: Product description\n- price: Product price (must be positive)\n- stock: Available stock (minimum 0)\n- idCategory: Category ID (must exist)\n\n⚠️ Only administrators can update products.\nProduct must exist and be active.\n",
+        "operationId": "updateProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product or category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied (ADMIN permission required)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Product Resource"
+        ],
+        "summary": "Delete product (soft delete)",
+        "description": "Soft delete a product by setting active = false.\nRequires DELETE_ONE_PRODUCT permission (ADMIN only).\n\n⚠️ Important notes:\n- This performs a SOFT DELETE (product becomes inactive)\n- Product data is preserved for audit purposes\n- Product won't appear in regular listings\n- Only administrators can delete products\n",
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product deleted successfully (soft delete)"
+          },
+          "404": {
+            "description": "Product not found"
+          },
+          "403": {
+            "description": "Access denied (ADMIN permission required)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/orders/{orderId}/status": {
+      "put": {
+        "tags": [
+          "Order Resource"
+        ],
+        "summary": "Update order status",
+        "description": "Updates the status of an order (e.g., PAID, SHIPPED, DELIVERED). ADMIN only.",
+        "operationId": "updateStatus",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/{name}": {
+      "put": {
+        "tags": [
+          "Category Resource"
+        ],
+        "summary": "Update category",
+        "description": "Update a category by name. Requires UPDATE_ONE_CATEGORY permission",
+        "operationId": "updateOneCategory",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/cart/item/{cartItemId}": {
+      "put": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Update item quantity",
+        "description": "Updates the quantity of a specific CartItem by its ID. Quantity must be > 0.",
+        "operationId": "updateQuantity",
+        "parameters": [
+          {
+            "name": "cartItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quantity updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid quantity value",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CartItem not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Remove item from cart",
+        "description": "Deletes a specific item from the cart using the CartItem ID.",
+        "operationId": "removeItem",
+        "parameters": [
+          {
+            "name": "cartItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Item removed successfully"
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": [
+          "Product Resource"
+        ],
+        "summary": "Get all products (Paginated)",
+        "description": "Retrieve active products with pagination and sorting controls.",
+        "operationId": "getAllProducts",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageProductResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Product Resource"
+        ],
+        "summary": "Create new product",
+        "description": "Create a new product in the system.\nRequires SAVE_ONE_PRODUCT permission (ADMIN only).\n\n📝 Required fields:\n- name: Product name (not blank)\n- description: Product description (not blank)\n- price: Positive decimal value (not null)\n- stock: Non-negative integer (minimum 0)\n- idCategory: Valid category ID (not null)\n\n⚠️ Only administrators can create products.\n",
+        "operationId": "createProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data (validation errors)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied (ADMIN permission required)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/orders/checkout": {
+      "post": {
+        "tags": [
+          "Order Resource"
+        ],
+        "summary": "Perform Checkout for authenticated user",
+        "description": "Converts the authenticated user's cart into an order, captures shipping snapshot and clears cart.",
+        "operationId": "checkout",
+        "responses": {
+          "201": {
+            "description": "Order created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Insufficient stock or empty cart",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cart or User not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": [
+          "Category Resource"
+        ],
+        "summary": "Get all categories",
+        "description": "Retrieve all categories. Requires READ_ALL_CATEGORIES permission",
+        "operationId": "getAllCategories",
+        "responses": {
+          "200": {
+            "description": "Categories retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No categories found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied (missing permissions)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Category Resource"
+        ],
+        "summary": "Create category",
+        "description": "Create a new category. Requires SAVE_ONE_CATEGORY permission",
+        "operationId": "saveOneCategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/cart/create/{userId}": {
+      "post": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Create cart for specific user",
+        "description": "Manually initializes a cart for a user ID. Usually used during registration.",
+        "operationId": "createCartForUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Cart created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already has a cart",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing SAVE_ONE_CART permission",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/cart/add/{userId}": {
+      "post": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Add item to cart",
+        "description": "Adds a product to a user's cart. If the product exists, it increments the quantity.",
+        "operationId": "addItemToCart",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Item added successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cart or Product not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing ADD_ITEM_CART permission",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a new user with shipping address",
+        "description": "Creates a new user in the system including mandatory shipping information.\n\n📌 **Public Endpoint**\n\n✔ **Required fields**:\n- **name**: Full name\n- **email**: Valid and unique email\n- **password**: Minimum 6 characters\n- **street**: Street name and number\n- **city**: City (e.g., San Salvador de Jujuy)\n- **zipCode**: Postal code (e.g., 4600)\n\n✔ **Example**:\n{\n  \"name\": \"Fabrizio Armada\",\n  \"email\": \"fabri@test.com\",\n  \"password\": \"password123\",\n  \"street\": \"Alvear 1020\",\n  \"city\": \"San Salvador de Jujuy\",\n  \"zipCode\": \"4600\"\n}\n",
+        "operationId": "registerUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error - Missing fields or invalid format",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login and obtain JWT token",
+        "description": "Authenticates a user and returns a JWT token.\n\n✔ **Example request**:\n{\n  \"email\": \"admin@test.com\",\n  \"password\": \"admin123\"\n}\n",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Invalid credentials or access denied",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/orders/my-orders": {
+      "get": {
+        "tags": [
+          "Order Resource"
+        ],
+        "summary": "Get my orders with shipping info",
+        "description": "Retrieves the order history for the authenticated user, including where each order was shipped.",
+        "operationId": "getMyOrders",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/orders/admin/all": {
+      "get": {
+        "tags": [
+          "Order Resource"
+        ],
+        "summary": "Get all orders with customer addresses (Admin)",
+        "description": "Retrieves all orders in the system. Essential for logistics and store management to know delivery destinations.",
+        "operationId": "getAllOrders",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Get current user's cart",
+        "description": "Retrieves the cart associated with the authenticated user from the JWT context.",
+        "operationId": "getMyCart",
+        "responses": {
+          "200": {
+            "description": "Cart retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponseDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing READ_ONE_CART permission",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/auth-me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get authenticated user info including address",
+        "description": "Returns the profile information of the currently authenticated user.\n\n🔐 **Requires JWT token**\n\n✔ **Response example**:\n{\n  \"id\": 1,\n  \"name\": \"Fabrizio Armada\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"ADMINISTRATOR\",\n  \"street\": \"Av. Fascio 123\",\n  \"city\": \"San Salvador de Jujuy\",\n  \"zipCode\": \"4600\"\n}\n",
+        "operationId": "authMe",
+        "responses": {
+          "200": {
+            "description": "User authenticated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/{id}": {
+      "delete": {
+        "tags": [
+          "Category Resource"
+        ],
+        "summary": "Delete category",
+        "description": "Delete a category by ID. Requires DELETE_ONE_CATEGORY permission",
+        "operationId": "deleteOneCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted successfully"
+          },
+          "404": {
+            "description": "Category not found"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/cart/clear": {
+      "delete": {
+        "tags": [
+          "Cart Resource"
+        ],
+        "summary": "Clear current user's cart",
+        "description": "Empties the shopping cart of the currently authenticated user.",
+        "operationId": "clearMyCart",
+        "responses": {
+          "200": {
+            "description": "Cart cleared successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing CLEAR_CART permission",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cart not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductRequestDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "idCategory": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "description",
+          "idCategory",
+          "name",
+          "price"
+        ]
+      },
+      "CategoryRequestDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "description",
+          "name"
+        ]
+      },
+      "OrderItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "priceAtPurchase": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      },
+      "OrderResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userEmail": {
+            "type": "string"
+          },
+          "shippingAddress": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemResponseDTO"
+            }
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PAID",
+              "SHIPPED",
+              "CANCELED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CartItemRequestDTO": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "productId"
+        ]
+      },
+      "CartRequestDTO": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItemRequestDTO"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 6
+          },
+          "street": {
+            "type": "string",
+            "minLength": 1
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1
+          },
+          "zipCode": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "city",
+          "email",
+          "name",
+          "password",
+          "street",
+          "zipCode"
+        ]
+      },
+      "AuthenticationRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PageProductResponseDTO": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductResponseDTO"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "unpaged": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "categoryName": {
+            "type": "string"
+          }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CategoryResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "nameProducts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CartItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "priceAtPurchase": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      },
+      "CartResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "username": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItemResponseDTO"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMINISTRATOR"
+            ]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "name": "Authorization",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

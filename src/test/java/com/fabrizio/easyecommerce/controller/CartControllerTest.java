@@ -1,11 +1,10 @@
 package com.fabrizio.easyecommerce.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,7 +110,17 @@ class CartControllerTest {
     void shouldClearCart() throws Exception {
         String token = getUserToken();
 
-        mockMvc.perform(delete("/api/cart/clear/2")
+        mockMvc.perform(delete("/api/cart/clear")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Cart cleared successfully"));
+    }
+
+    @Test
+    void shouldClearMyCart() throws Exception {
+        String token = getUserToken();
+
+        mockMvc.perform(delete("/api/cart/clear")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Cart cleared successfully"));
@@ -175,5 +184,24 @@ class CartControllerTest {
                         .header("Authorization", "Bearer " + token)
                         .param("quantity", "5"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldFailWhenUpdatingAnotherUsersCartItem() throws Exception {
+        String adminToken = getAdminToken();
+
+        mockMvc.perform(put("/api/cart/item/1")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .param("quantity", "5"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldFailWhenRemovingAnotherUsersCartItem() throws Exception {
+        String adminToken = getAdminToken();
+
+        mockMvc.perform(delete("/api/cart/item/1")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isForbidden());
     }
 }

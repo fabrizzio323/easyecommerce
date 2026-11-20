@@ -1,0 +1,21 @@
+package com.fabrizio.easyecommerce.dto.cart;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartResponseDTO {
+    private Long id;
+    private Long userId;
+    private String username;
+    private List<CartItemResponseDTO> items;
+    private BigDecimal total;
+    private LocalDateTime createdAt;
+}

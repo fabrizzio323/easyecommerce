@@ -1,10 +1,11 @@
 package com.fabrizio.easyecommerce.controller;
+import lombok.RequiredArgsConstructor;
 
-import com.fabrizio.easyecommerce.Service.AuthenticationService;
-import com.fabrizio.easyecommerce.dto.AuthenticationRequest;
-import com.fabrizio.easyecommerce.dto.AuthenticationResponse;
-import com.fabrizio.easyecommerce.dto.RegisterRequest;
-import com.fabrizio.easyecommerce.dto.UserDTO;
+import com.fabrizio.easyecommerce.Service.auth.AuthenticationService;
+import com.fabrizio.easyecommerce.dto.authentication.AuthenticationRequest;
+import com.fabrizio.easyecommerce.dto.authentication.AuthenticationResponse;
+import com.fabrizio.easyecommerce.dto.authentication.RegisterRequest;
+import com.fabrizio.easyecommerce.dto.authentication.UserDTO;
 import com.fabrizio.easyecommerce.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,12 +40,12 @@ import org.springframework.web.bind.annotation.*;
     - **USER**: user@test.com / user123 (Location: Belgrano 450, San Salvador de Jujuy)
     """
 )
+@RequiredArgsConstructor
 public class AuthenticationController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
-    @Autowired
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Operation(
             summary = "Register a new user with shipping address",

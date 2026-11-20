@@ -7,5 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class EasyecommerceApplication {
 
 	public static void main(String[] args) {
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
 		SpringApplication.run(EasyecommerceApplication.class, args);}
 }
